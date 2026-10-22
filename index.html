@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b9dcf2">
+  <meta name="description" content="Find your kind of cafe in Surat with WHERE?">
+  <title>WHERE? — Find your somewhere</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand-image brand-image--header" href="#home" aria-label="WHERE? home">
+      <img src="where.png" alt="WHERE?">
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#featured">Explore</a>
+      <a href="#about">About</a>
+    </nav>
+    <a class="pill-link pill-link--dark header-cta" href="#featured">Discover cafes <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <video class="hero__video" muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="where.mp4" type="video/mp4">
+      </video>
+      <div class="hero__content">
+        <h1 id="hero-title" class="visually-hidden">WHERE? Cafe discovery in Surat</h1>
+        <a class="pill-link pill-link--light" href="#featured">Find your somewhere <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+    <section class="poster" aria-labelledby="poster-title">
+      <div class="poster__copy">
+        <h2 id="poster-title">Not your typical map.</h2>
+        <p>Find your niche place.</p>
+      </div>
+    </section>
+
+    <section class="section niche-section" aria-label="Cafe types">
+      <div class="niche-tools">
+        <div class="slider-controls" aria-label="Niche categories slider controls">
+          <button class="round-button" id="niche-prev" type="button" aria-label="Scroll to previous cafe types">←</button>
+          <button class="round-button" id="niche-next" type="button" aria-label="Scroll to next cafe types">→</button>
+        </div>
+      </div>
+      <div class="niche-slider" id="niche-slider" tabindex="0" aria-label="Cafe types from the Surat cafe dataset">
+        <div class="niche-track" id="niche-track"></div>
+      </div>
+    </section>
+
+    <section class="section featured-section" id="featured" aria-labelledby="featured-title">
+      <div class="section-heading section-heading--featured">
+        <div>
+          <p class="eyebrow">A few real places to start</p>
+          <h2 id="featured-title">Find your type<span class="title-period">.</span></h2>
+        </div>
+        <a class="text-link" href="#niche-title" id="clear-filter">See all picks <span aria-hidden="true">↗</span></a>
+      </div>
+      <p class="filter-status" id="filter-status" aria-live="polite"></p>
+      <div class="cafe-grid" id="cafe-grid"></div>
+      <p class="dataset-note">Names, areas, cafe types and approximate prices are read from the cafecompass database.</p>
+    </section>
+
+    <section class="area-section" aria-labelledby="area-title">
+      <div class="section area-inner">
+        <div class="area-directory">
+          <p class="eyebrow" id="area-title">SURAT</p>
+          <div class="area-list" id="area-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" id="about">
+    <div class="footer-top">
+      <div class="footer-about">
+        <a class="brand-image brand-image--footer" href="#home" aria-label="WHERE? home">
+          <img src="where.png" alt="WHERE?">
+        </a>
+        <p>A little less scrolling.<br>A little more somewhere.</p>
+      </div>
+      <div class="footer-links">
+        <span class="eyebrow">TAKE A LOOK AROUND</span>
+        <a href="#featured">Explore cafes <span aria-hidden="true">↗</span></a>
+        <a href="#about">About WHERE?</a>
+      </div>
+      <p class="footer-signoff">made for<br><em>getting lost</em></p>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="current-year"></span> WHERE? · A student project</span>
+      <span>Made with curiosity in Surat, India.</span>
+    </div>
+  </footer>
+</body>
+</html>
