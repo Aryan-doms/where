@@ -58,16 +58,16 @@ function cafeCard(cafe) {
         <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">
           <span aria-hidden="true">${saved ? "♥" : "♡"}</span>
         </button>
-        <div class="explore-card__overlay">
-          <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
-          <p>${escapeExploreHtml(cafe.cuisine)}</p>
-        </div>
       </div>
       <div class="explore-card__body">
-        <p class="explore-card__niche">${escapeExploreHtml(cafe.niche)}</p>
+        <div class="explore-card__topline">
+          <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
+          <p class="explore-card__hours">${escapeExploreHtml(cafe.timing)}</p>
+        </div>
+        <p class="explore-card__cuisine">${escapeExploreHtml(cafe.cuisine)}</p>
         <dl class="explore-card__details">
-          <div><dt>Hours</dt><dd>${escapeExploreHtml(cafe.timing)}</dd></div>
-          <div><dt>Cost for two</dt><dd>${escapeExploreHtml(cafe.price.replace(" people (approx.)", ""))}</dd></div>
+          <div><dt>Type</dt><dd>${escapeExploreHtml(cafe.niche)}</dd></div>
+          <div><dt>Price approx. for two</dt><dd>${escapeExploreHtml(cafe.price.replace(" people (approx.)", ""))}</dd></div>
         </dl>
       </div>
     </article>
