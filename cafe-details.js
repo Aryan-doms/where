@@ -98,6 +98,56 @@ function setText(id, value) {
   return element;
 }
 
+const sampleReviews = [
+  { name: "Riya", message: "A calm little stop with good coffee and enough room to stay awhile.", image: "where.png" },
+  { name: "Dev", message: "The kind of place that works for a quick bite and a slow afternoon.", image: "where.png" },
+  { name: "Meera", message: "Loved the easy atmosphere. The menu has something for everyone.", image: "where.png" }
+];
+
+function getReviews(cafeId) {
+  const saved = JSON.parse(localStorage.getItem(`whereReviews-${cafeId}`) || "[]");
+  return [...saved, ...sampleReviews];
+}
+
+function reviewMarkup(review) {
+  return `
+    <article class="review-bubble">
+      <img class="detail-review__avatar" src="${escapeHtml(review.image || "where.png")}" alt="">
+      <div>
+        <p class="review-bubble__name">${escapeHtml(review.name)}</p>
+        <p class="review-bubble__text">${escapeHtml(review.message)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function setupReviews(cafe) {
+  const reviews = getReviews(cafe.id);
+  document.getElementById("review-list").innerHTML = reviews.slice(0, 3).map(reviewMarkup).join("");
+  document.getElementById("all-review-list").innerHTML = reviews.map(reviewMarkup).join("");
+
+  const allDialog = document.getElementById("all-reviews-dialog");
+  document.getElementById("see-all-reviews").addEventListener("click", () => allDialog.showModal());
+  document.getElementById("close-all-reviews").addEventListener("click", () => allDialog.close());
+  const sessionUsername = localStorage.getItem("whereSession");
+  document.getElementById("review-login-note").innerHTML = sessionUsername
+    ? `Posting as <strong>${escapeHtml(sessionUsername)}</strong>`
+    : 'Log in to add a review. <a href="login.html">Log in</a>';
+  document.getElementById("review-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!sessionUsername) {
+      window.location.href = "login.html";
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    const saved = JSON.parse(localStorage.getItem(`whereReviews-${cafe.id}`) || "[]");
+    saved.unshift({ name: sessionUsername, message: form.get("review-message"), image: "where.png" });
+    localStorage.setItem(`whereReviews-${cafe.id}`, JSON.stringify(saved));
+    event.currentTarget.reset();
+    setupReviews(cafe);
+  });
+}
+
 function renderCafe(cafe, allCafes) {
   document.title = `${cafe.name} — WHERE?`;
   document.querySelectorAll(".cafe-detail-main > section").forEach((section) => {
@@ -128,6 +178,7 @@ function renderCafe(cafe, allCafes) {
   setText("cafe-vibe", cafe.vibe);
   setText("cafe-timing", "Mon–Fri: 12midnight – 12:45am, 8:30am – 12midnight\nSat–Sun: 12midnight – 12:45am, 8:30am – 12midnight");
   setText("map-address", cafe.location);
+  setupReviews(cafe);
   document.getElementById("cafe-map").setAttribute("aria-label", `Decorative location sketch for ${cafe.name}, not to scale. Address: ${cafe.location}`);
 
   const directions = document.getElementById("map-directions");

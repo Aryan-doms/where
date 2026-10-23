@@ -95,6 +95,18 @@
         </div>
       </div>
 
+      <div class="detail-review" aria-labelledby="reviews-heading">
+        <div class="detail-review__heading">
+          <h2 id="reviews-heading">What people say.</h2>
+          <button class="detail-review__action" id="see-all-reviews" type="button">See all</button>
+        </div>
+        <div class="detail-review__list" id="review-list"></div>
+        <form class="detail-review__form" id="review-form">
+          <p id="review-login-note" class="detail-review__note"></p>
+          <textarea id="review-message" name="review-message" rows="2" maxlength="280" placeholder="Share a thought about this place..." aria-label="Your review" required></textarea>
+          <button class="detail-review__submit" id="add-review" type="submit">Send review</button>
+        </form>
+      </div>
     </section>
 
     <section class="detail-related" aria-labelledby="related-heading" hidden>
@@ -107,6 +119,15 @@
 
     <p class="detail-error" id="detail-error" role="status" hidden></p>
   </main>
+
+  <dialog class="review-dialog" id="all-reviews-dialog" aria-labelledby="all-reviews-title">
+    <div class="review-dialog__form">
+      <button class="review-dialog__close" id="close-all-reviews" type="button" aria-label="Close">×</button>
+      <p class="detail-label">THE FULL THREAD</p>
+      <h2 id="all-reviews-title">All reviews.</h2>
+      <div class="review-dialog__list" id="all-review-list"></div>
+    </div>
+  </dialog>
 
   <footer class="site-footer" id="about">
     <div class="footer-panel">
