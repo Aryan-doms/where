@@ -46,3 +46,11 @@ stopping the container does not delete it. To remove that local data as well:
 ```sh
 docker compose down -v
 ```
+
+## Account UI prototype
+
+The login, signup, and profile pages are currently frontend-only. They use
+browser `localStorage` so the account flow can be designed before the MySQL
+schema is finalized. Passwords are hashed in the browser for this prototype;
+this is not a production authentication system. The future PHP/MySQL auth
+implementation should replace this storage and validation layer.

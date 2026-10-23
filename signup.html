@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up — WHERE?</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="auth.js" defer></script>
+</head>
+<body class="auth-page" data-page="auth">
+  <header class="site-header site-header--plain">
+    <a class="brand-image brand-image--header" href="index.html#home" aria-label="WHERE? home"><img src="where.png" alt="WHERE?"></a>
+    <a class="auth-header-link" href="login.html">Log in</a>
+  </header>
+  <main class="auth-layout">
+    <section class="auth-card" aria-labelledby="signup-title">
+      <p class="eyebrow">Make a little room</p>
+      <h1 id="signup-title">Sign up.</h1>
+      <p class="auth-intro">Just the basics. You can change your picture later.</p>
+      <form id="signup-form" class="auth-form">
+        <label for="signup-phone">Phone number</label>
+        <input id="signup-phone" name="phone" type="tel" autocomplete="tel" required>
+        <label for="signup-username">Username</label>
+        <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" required>
+        <label for="signup-password">Password</label>
+        <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <label for="signup-picture">Profile picture <span>(optional)</span></label>
+        <input id="signup-picture" name="profile-picture" type="file" accept="image/*">
+        <button class="auth-submit" type="submit">Create account</button>
+      </form>
+      <p id="auth-message" class="auth-message" aria-live="polite"></p>
+      <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your profile — WHERE?</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="auth.js" defer></script>
+</head>
+<body class="auth-page" data-page="profile">
+  <header class="site-header site-header--plain">
+    <a class="brand-image brand-image--header" href="index.html#home" aria-label="WHERE? home"><img src="where.png" alt="WHERE?"></a>
+    <a class="auth-header-link" href="index.html">Explore</a>
+  </header>
+  <main class="auth-layout">
+    <section class="profile-card" aria-labelledby="profile-title">
+      <div class="profile-topline">
+        <p class="eyebrow">Your somewhere</p>
+        <button id="logout-button" class="text-button" type="button">Log out</button>
+      </div>
+      <div class="profile-image-wrap">
+        <img id="profile-image" src="where.png" alt="Profile picture">
+      </div>
+      <h1 id="profile-title">@<span id="profile-username"></span></h1>
+      <dl class="profile-details">
+        <div><dt>Username</dt><dd id="profile-username-copy"></dd></div>
+        <div><dt>Phone</dt><dd id="profile-phone"></dd></div>
+      </dl>
+      <form id="profile-form" class="profile-form">
+        <label for="profile-picture">Change profile picture</label>
+        <input id="profile-picture" name="profile-picture" type="file" accept="image/*">
+        <button class="auth-submit" type="submit">Save picture</button>
+      </form>
+      <p id="auth-message" class="auth-message" aria-live="polite"></p>
+    </section>
+  </main>
+</body>
+</html>
