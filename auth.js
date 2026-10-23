@@ -94,6 +94,56 @@ function readImage(file) {
   });
 }
 
+function parseProfileCsv(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (character === '"') {
+      if (quoted && text[index + 1] === '"') { value += '"'; index += 1; }
+      else quoted = !quoted;
+    } else if (character === "," && !quoted) { row.push(value); value = ""; }
+    else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(value); rows.push(row); row = []; value = "";
+    } else value += character;
+  }
+  if (value || row.length) { row.push(value); rows.push(row); }
+  const [headers, ...dataRows] = rows;
+  return dataRows.filter((values) => values.some((entry) => entry.trim())).map((values, index) => {
+    const source = Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""]));
+    return {
+      id: `cafe-${String(index + 1).padStart(3, "0")}`,
+      name: source.Name,
+      area: source["Surat Area"].replace(/^Surat\s*\/\s*/, "").trim(),
+      niche: source["Niche Type of Cafe"]
+    };
+  });
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+async function renderMySpots() {
+  const list = document.querySelector("#my-spots-list");
+  const favorites = window.WhereUser.favorites();
+  if (!favorites.length) {
+    list.innerHTML = '<p class="detail-muted">Your saved spots will show up here.</p>';
+    return;
+  }
+  const response = await fetch("surat_cafes_data.csv");
+  if (!response.ok) throw new Error(`Could not load saved spots (HTTP ${response.status}).`);
+  const cafes = parseProfileCsv(await response.text()).filter((cafe) => favorites.includes(cafe.id));
+  list.innerHTML = cafes.length
+    ? cafes.map((cafe) => `<a class="my-spot" href="cafe.html?id=${encodeURIComponent(cafe.id)}"><span><strong>${escapeHtml(cafe.name)}</strong><small>${escapeHtml(cafe.area)}</small></span><span aria-hidden="true">↗</span></a>`).join("")
+    : '<p class="detail-muted">Your saved spots will show up here.</p>';
+}
+
 function setupProfile() {
   const user = getCurrentUser();
   if (!user) {
@@ -125,6 +175,10 @@ function setupProfile() {
   document.querySelector("#logout-button").addEventListener("click", () => {
     localStorage.removeItem(sessionKey);
     window.location.href = "login.html";
+  });
+  renderMySpots().catch((error) => {
+    console.error("Saved spots could not be loaded.", error);
+    document.querySelector("#my-spots-list").textContent = error.message;
   });
 }
 

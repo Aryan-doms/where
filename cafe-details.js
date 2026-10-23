@@ -173,6 +173,21 @@ function renderCafe(cafe, allCafes) {
   setText("cafe-name", cafe.name);
   setText("cafe-cuisine-summary", cafe.niche);
   setText("cafe-price", cafe.price.replace(/\s+for two people \(approx\.\)/i, ""));
+  const favoriteButton = document.getElementById("favorite-button");
+  const updateFavoriteButton = () => {
+    const saved = window.WhereUser.hasFavorite(cafe.id);
+    favoriteButton.setAttribute("aria-pressed", String(saved));
+    favoriteButton.innerHTML = `${saved ? "♥" : "♡"} <span>${saved ? "Saved spot" : "Save spot"}</span>`;
+  };
+  updateFavoriteButton();
+  favoriteButton.addEventListener("click", () => {
+    if (!window.WhereUser.current()) {
+      window.location.href = "login.html";
+      return;
+    }
+    window.WhereUser.toggleFavorite(cafe.id);
+    updateFavoriteButton();
+  });
   setText("cafe-vibe", cafe.vibe);
   setText("cafe-timing", "Mon–Fri: 12midnight – 12:45am, 8:30am – 12midnight\nSat–Sun: 12midnight – 12:45am, 8:30am – 12midnight");
   setText("map-address", cafe.location);

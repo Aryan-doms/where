@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explore cafes — WHERE?</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="user-ui.js" defer></script>
+  <script src="explore.js" defer></script>
+</head>
+<body class="explore-page">
+  <header class="site-header site-header--plain">
+    <a class="brand-image brand-image--header" href="index.html#home" aria-label="WHERE? home"><img src="where.png" alt="WHERE?"></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="explore.html" aria-current="page">Explore</a>
+      <a href="index.html#home" class="nav-disabled" title="Guides coming soon">Guides</a>
+      <a href="index.html#areas">Areas</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#home" class="nav-disabled" title="Contact coming soon">Contact</a>
+      <a href="login.html" data-account-nav>Log in</a>
+    </nav>
+  </header>
+  <main class="explore-main">
+    <div class="explore-heading">
+      <p class="eyebrow">Everywhere worth going</p>
+      <h1>All spots.</h1>
+      <p>Search the current Surat cafe list and save the places you want to keep close.</p>
+    </div>
+    <form class="explore-filters" id="explore-filters">
+      <label class="explore-search">
+        <span class="visually-hidden">Search cafes</span>
+        <input id="cafe-search" type="search" placeholder="Search by name, area or cuisine">
+      </label>
+      <label>
+        <span class="visually-hidden">Filter by area</span>
+        <select id="area-filter"><option value="">All areas</option></select>
+      </label>
+      <label>
+        <span class="visually-hidden">Filter by cuisine</span>
+        <select id="cuisine-filter"><option value="">All cuisines</option></select>
+      </label>
+    </form>
+    <p class="explore-count" id="explore-count" aria-live="polite"></p>
+    <div class="explore-grid" id="explore-grid"></div>
+  </main>
+</body>
+</html>
