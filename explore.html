@@ -13,30 +13,41 @@
   <div data-where-header></div>
   <main class="explore-main">
     <div class="explore-heading">
-      <p class="eyebrow">SURAT · CAFE GUIDE</p>
       <h1>All spots.</h1>
-      <p>Find a place for your next coffee, meal, or slow afternoon.</p>
+      <p>Find a place for your outing.</p>
     </div>
     <form class="explore-searchbar" id="explore-filters">
       <label class="explore-search">
         <span class="visually-hidden">Search cafes</span>
-        <input id="cafe-search" type="search" placeholder="Search cafes, areas or cuisines">
+        <span aria-hidden="true">⌕</span>
+        <input id="cafe-search" type="search" placeholder="Search spots, areas or cuisines">
       </label>
-      <label class="explore-select">
-        <span class="visually-hidden">Filter by area</span>
-        <select id="area-filter"><option value="">All areas</option></select>
-      </label>
-      <label class="explore-select">
-        <span class="visually-hidden">Filter by cuisine</span>
-        <select id="cuisine-filter"><option value="">All cuisines</option></select>
-      </label>
+      <button class="filter-button" id="filter-button" type="button" aria-haspopup="dialog" aria-controls="filter-dialog">
+        <span aria-hidden="true">☷</span> Filters <span class="filter-button__count" id="filter-count" hidden>0</span>
+      </button>
     </form>
     <div class="explore-toolbar">
       <div class="explore-chips" id="explore-chips" aria-label="Quick area filters"></div>
       <p class="explore-count" id="explore-count" aria-live="polite"></p>
     </div>
     <div class="explore-grid" id="explore-grid"></div>
+    <button class="show-more-button" id="show-more" type="button" hidden>Show more <span aria-hidden="true">↓</span></button>
   </main>
+  <dialog class="filter-dialog" id="filter-dialog" aria-labelledby="filter-title">
+    <form class="filter-dialog__panel" method="dialog" id="filter-form">
+      <button class="filter-dialog__close" id="close-filter" type="button" aria-label="Close filters">×</button>
+      <p class="eyebrow">REFINE THE LIST</p>
+      <h2 id="filter-title">Find your kind of spot.</h2>
+      <label for="area-filter">Area</label>
+      <select id="area-filter"><option value="">All areas</option></select>
+      <label for="cuisine-filter">Cuisine</label>
+      <select id="cuisine-filter"><option value="">All cuisines</option></select>
+      <div class="filter-dialog__actions">
+        <button class="text-button" id="clear-filters" type="button">Clear all</button>
+        <button class="pill-link pill-link--dark" id="apply-filters" type="submit">Apply filters</button>
+      </div>
+    </form>
+  </dialog>
   <div data-where-footer></div>
 </body>
 </html>
