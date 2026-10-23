@@ -3,14 +3,14 @@
 ## Scope and stack
 - Keep this project beginner-friendly and use HTML, CSS, Bootstrap only if already included, vanilla JavaScript, PHP, and MySQL.
 - Do not add frameworks, packages, build tools, CDNs, or animation libraries without approval.
-- Implement only the requested homepage. Do not expand it into a complete discovery app or modify another project.
+- Work only on the requested WHERE? homepage and cafe detail page. Do not expand into a complete discovery app or modify another project.
 
 ## Assets and data
 - Prefer project-owned local assets. Do not download or scrape media.
 - Use the supplied `where.png` logo and `where.mp4` hero video.
 - Treat supplied datasets as the source of truth. Do not invent records or fields, or overwrite source datasets.
-- Use the existing local `cafecompass` MySQL database and its `cafes` and `areas` tables. Do not recreate the database or import the CSVs again.
-- Keep local database credentials in the ignored `api/config.php`; never commit credentials.
+- The current frontend reads the supplied CSV files in the browser; do not connect it to MySQL or the PHP API until database work is requested.
+- Do not recreate databases or import/alter the CSVs.
 - Do not present placeholder artwork as authentic cafe or area photography.
 
 ## Quality
