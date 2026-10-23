@@ -292,10 +292,9 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .area-see-all { display: inline-flex; gap: 8px; margin-top: 34px; padding-bottom: 7px; border-bottom: 1px solid currentColor; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
 
 .cafe-detail-main { width: min(1160px, 90%); margin: 132px auto 110px; }
-.detail-header__back { padding: 11px 16px; border: 1px solid #171b2530; border-radius: 99px; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
-.detail-header__back span { margin-left: 8px; }
-.detail-back-link { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 54px; color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.detail-back-link span { color: var(--ink); font-size: 1.1rem; }
+.detail-header__profile { padding: 11px 16px; border: 1px solid #171b2530; border-radius: 99px; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+.detail-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 54px; color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.detail-breadcrumb a { color: var(--ink); }
 .detail-hero { display: grid; grid-template-columns: minmax(0, 1fr) 220px; align-items: end; gap: 48px; padding-bottom: 50px; border-bottom: 1px solid #171b252b; }
 .detail-hero__copy { min-width: 0; }
 .detail-kicker { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 22px; color: var(--muted); font-size: .68rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
@@ -313,7 +312,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .detail-tag { display: inline-flex; align-items: center; min-height: 33px; padding: 7px 12px; border: 1px solid #171b2527; border-radius: 99px; color: #3f4245; font-size: .72rem; line-height: 1.2; }
 .detail-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 1px solid #171b252b; }
-.detail-fact { min-height: 150px; padding: 25px 28px 28px 0; border-bottom: 1px solid #171b251a; }
+.detail-fact { min-height: 118px; padding: 20px 28px 22px 0; border-bottom: 1px solid #171b251a; }
 .detail-fact:nth-child(2n) { padding-left: 28px; border-left: 1px solid #171b251a; }
 .detail-fact:nth-last-child(-n + 2) { border-bottom: 0; }
 .detail-fact > p:not(.detail-label), .detail-fact > div:not(.detail-label) { max-width: 490px; margin: 15px 0 0; color: #34383e; font-size: .87rem; line-height: 1.7; }
@@ -372,7 +371,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .review-dialog__close { position: absolute; top: 17px; right: 18px; border: 0; color: var(--ink); background: transparent; font-size: 1.5rem; cursor: pointer; }
 .detail-review__submit { margin-top: 8px; padding: 12px 16px; border: 0; color: #fff; background: var(--ink); font: inherit; font-size: .7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; }
 .review-dialog__list { display: grid; gap: 14px; max-height: 60vh; overflow-y: auto; }
-.detail-related { display: grid; grid-template-columns: .7fr 1.3fr; gap: 40px; padding-top: 70px; }
+.detail-related { display: grid; grid-template-columns: .7fr 1.3fr; gap: 40px; padding-top: 58px; }
+.detail-related__heading { text-align: right; }
 .detail-related__heading h2 { margin: 8px 0 0; font-family: var(--serif); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 500; letter-spacing: -.065em; }
 .detail-related__list { display: grid; align-self: start; }
 .detail-related__link { display: flex; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid #171b252b; font-family: var(--serif); font-size: 1.3rem; }
@@ -423,7 +423,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .site-header { padding: 14px 5%; }
   .brand-image--header { width: 108px; height: 50px; }
   .detail-header .main-nav { display: none; }
-  .detail-header__back { padding: 9px 12px; font-size: .62rem; }
+  .detail-header__profile { padding: 9px 12px; font-size: .62rem; }
+  .auth-page .main-nav, .cafe-detail-page .main-nav { display: flex; gap: 10px; font-size: .62rem; }
   .menu-toggle {
     display: grid;
     width: 40px;
@@ -496,7 +497,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .footer-contact { margin-top: 48px; }
   .footer-bottom { align-items: center; gap: 12px; font-size: .6rem; }
   .cafe-detail-main { width: 90%; margin-top: 112px; margin-bottom: 75px; }
-  .detail-back-link { margin-bottom: 36px; }
+  .detail-breadcrumb { margin-bottom: 36px; gap: 7px; font-size: .58rem; }
   .detail-hero { grid-template-columns: 1fr; gap: 24px; padding-bottom: 32px; }
   .detail-kicker { margin-bottom: 20px; font-size: .59rem; }
   .detail-hero h1 { font-size: clamp(3.5rem, 16vw, 5.8rem); }
@@ -511,6 +512,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .detail-fact:nth-last-child(2) { border-bottom: 1px solid #171b251a; }
   .detail-fact:last-child { border-bottom: 0; }
   .detail-related { grid-template-columns: 1fr; gap: 18px; padding-top: 48px; }
+  .detail-related__heading { text-align: left; }
   .detail-map-review { grid-template-columns: 1fr; gap: 36px; padding-top: 42px; }
   .detail-map { min-height: 300px; }
   .detail-map-card__footer { align-items: flex-start; flex-direction: column; }

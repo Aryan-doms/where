@@ -168,6 +168,8 @@ function renderCafe(cafe, allCafes) {
   });
   setText("cafe-area", cafe.area.toUpperCase());
   setText("cafe-id", cafe.id.toUpperCase());
+  setText("breadcrumb-area", cafe.area.toUpperCase());
+  setText("breadcrumb-id", cafe.id.toUpperCase());
   setText("cafe-name", cafe.name);
   setText("cafe-cuisine-summary", cafe.niche);
   setText("cafe-price", cafe.price.replace(/\s+for two people \(approx\.\)/i, ""));
