@@ -1,63 +1,48 @@
 <?php
 
-header('Content-Type: application/json; charset=utf-8');
-
-$configPath = __DIR__ . '/config.php';
-
-if (!is_file($configPath)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database settings are missing. Copy config.example.php to config.php.']);
-    exit;
-}
-
-$config = require $configPath;
+require_once __DIR__ . '/cafe-data.php';
 
 try {
-    $connection = new PDO(
-        "mysql:host={$config['host']};dbname={$config['database']};charset=utf8mb4",
-        $config['username'],
-        $config['password'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-
-    $cafes = $connection->query(
-        'SELECT c.id, c.name, a.display_name AS area, c.niche_type, c.price_range
-         FROM cafes c
-         JOIN areas a ON a.area_id = c.area_id
-         ORDER BY c.source_row_number'
-    )->fetchAll(PDO::FETCH_ASSOC);
-
-    $types = $connection->query(
-        'SELECT niche_type AS name, COUNT(*) AS count
-         FROM cafes
-         GROUP BY niche_type
-         ORDER BY count DESC, niche_type'
-    )->fetchAll(PDO::FETCH_ASSOC);
-
-    $areas = $connection->query(
-        'SELECT a.display_name AS name, COUNT(c.id) AS count
-         FROM areas a
-         JOIN cafes c ON c.area_id = a.area_id
-         GROUP BY a.area_id, a.display_name
-         ORDER BY count DESC, a.display_name'
-    )->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($types as &$type) {
-        $type['count'] = (int) $type['count'];
+    $pdo = whereDb();
+    $cafes = whereFetchCafes($pdo);
+    $types = [];
+    $areas = [];
+    foreach ($cafes as $cafe) {
+        $types[$cafe['niche']] = ($types[$cafe['niche']] ?? 0) + 1;
+        $areas[$cafe['area']] = ($areas[$cafe['area']] ?? 0) + 1;
     }
-    unset($type);
+    arsort($types);
+    arsort($areas);
 
-    foreach ($areas as &$area) {
-        $area['count'] = (int) $area['count'];
+    $featured = $pdo->query(
+        'SELECT c.id
+         FROM homepage_featured_cafes h
+         JOIN cafes c ON c.id = h.cafe_id
+         WHERE c.status = "published"
+         ORDER BY h.position'
+    )->fetchAll(PDO::FETCH_COLUMN);
+    if (!$featured) {
+        $featured = array_column(array_slice($cafes, 0, 6), 'id');
     }
-    unset($area);
 
-    echo json_encode(
-        ['cafes' => $cafes, 'types' => $types, 'areas' => $areas],
-        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-    );
+    $sections = $pdo->query(
+        'SELECT section_key, title, body, media_path, link_label, link_url, is_published
+         FROM homepage_sections
+         ORDER BY sort_order'
+    )->fetchAll();
+
+    whereJson([
+        'cafes' => $cafes,
+        'types' => array_map(static function (string $name, int $count): array {
+            return ['name' => $name, 'count' => $count];
+        }, array_keys($types), array_values($types)),
+        'areas' => array_map(static function (string $name, int $count): array {
+            return ['name' => $name, 'count' => $count];
+        }, array_keys($areas), array_values($areas)),
+        'featured' => $featured,
+        'sections' => $sections
+    ]);
 } catch (PDOException $error) {
     error_log('WHERE? homepage database error: ' . $error->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Could not connect to the cafe database. Check MySQL and api/config.php.']);
+    whereJson(['error' => 'Could not load cafe data from MySQL. Start Docker and check api/config.php.'], 500);
 }

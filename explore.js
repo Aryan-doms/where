@@ -1,25 +1,4 @@
 document.addEventListener("where:layout-ready", () => {
-function parseExploreCsv(text) {
-  const rows = [];
-  let row = [];
-  let value = "";
-  let quoted = false;
-  for (let index = 0; index < text.length; index += 1) {
-    const character = text[index];
-    if (character === '"') {
-      if (quoted && text[index + 1] === '"') { value += '"'; index += 1; }
-      else quoted = !quoted;
-    } else if (character === "," && !quoted) { row.push(value); value = ""; }
-    else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && text[index + 1] === "\n") index += 1;
-      row.push(value); rows.push(row); row = []; value = "";
-    } else value += character;
-  }
-  if (value || row.length) { row.push(value); rows.push(row); }
-  if (rows.length) rows[0][0] = rows[0][0].replace(/^\uFEFF/, "");
-  return rows;
-}
-
 function escapeExploreHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -27,38 +6,11 @@ function escapeExploreHtml(value) {
 }
 
 function fixedTiming(timing) {
-  const segments = timing.split(";").map((segment) => segment.trim()).filter(Boolean);
-  return segments
-    .flatMap((segment) => {
-      const hours = segment.replace(/^[^:]+:\s*/, "").trim();
-      return hours.split(",").map((period) => period.trim()).filter(Boolean);
-    })
+  return timing.split(/\r?\n/)
+    .map((segment) => segment.trim().replace(/12midnight/gi, "12:00am").replace(/12noon/gi, "12:00pm"))
+    .filter(Boolean)
     .slice(0, 2)
-    .join("\n")
-    .replace(/12midnight/gi, "12:00am")
-    .replace(/12noon/gi, "12:00pm");
-}
-
-function makeExploreCafe(values, headers, index) {
-  const source = Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""]));
-  return {
-    id: `cafe-${String(index + 1).padStart(3, "0")}`,
-    name: source.Name,
-    area: source["Surat Area"].replace(/^Surat\s*\/\s*/, "").trim(),
-    cuisine: source["Cuisine Served / Type of Cafe Cuisine"],
-    niche: source["Niche Type of Cafe"],
-    timing: fixedTiming(source.Timing),
-    price: source["Price Range"]
-  };
-}
-
-async function loadExploreImages() {
-  const response = await fetch("catalog.csv");
-  if (!response.ok) return [];
-  const [headers, ...rows] = parseExploreCsv(await response.text());
-  const imageIndex = headers.indexOf("image_url");
-  if (imageIndex < 0) return [];
-  return rows.map((row) => row[imageIndex] || "").filter(Boolean);
+    .join("\n");
 }
 
 function cafeCard(cafe) {
@@ -89,12 +41,15 @@ function cafeCard(cafe) {
 }
 
 async function setupExplore() {
-  const response = await fetch("surat_cafes_data.csv");
-  if (!response.ok) throw new Error(`Could not load cafes (HTTP ${response.status}).`);
-  const [headers, ...rows] = parseExploreCsv(await response.text());
-  const cafes = rows.filter((row) => row.some((value) => value.trim())).map((row, index) => makeExploreCafe(row, headers, index));
-  const images = await loadExploreImages();
-  cafes.forEach((cafe, index) => { cafe.image = images[index % images.length] || ""; });
+  await window.WhereUser.ready;
+  const response = await fetch("api/cafes.php");
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || `Could not load cafes (HTTP ${response.status}).`);
+  const cafes = result.cafes.map((cafe) => ({
+    ...cafe,
+    timing: fixedTiming(cafe.timing),
+    image: cafe.cover_image
+  }));
   const search = document.querySelector("#cafe-search");
   const area = document.querySelector("#area-filter");
   const cuisine = document.querySelector("#cuisine-filter");
@@ -127,13 +82,19 @@ async function setupExplore() {
     count.textContent = `${filtered.length} ${filtered.length === 1 ? "spot" : "spots"}`;
     grid.innerHTML = filtered.length ? filtered.slice(0, visibleCount).map(cafeCard).join("") : "<p>No spots match that search yet.</p>";
     showMore.hidden = filtered.length <= visibleCount;
-    grid.querySelectorAll("[data-favorite-id]").forEach((button) => button.addEventListener("click", () => {
+    grid.querySelectorAll("[data-favorite-id]").forEach((button) => button.addEventListener("click", async () => {
       const id = button.dataset.favoriteId;
-      const saved = window.WhereUser.current();
-      if (!saved) { window.location.href = "login.html"; return; }
-      const isSaved = window.WhereUser.toggleFavorite(id);
-      button.setAttribute("aria-pressed", String(isSaved));
-      button.setAttribute("aria-label", `${isSaved ? "Remove" : "Save"} ${cafe.name}`);
+      if (!window.WhereUser.current()) { window.location.href = "login.html"; return; }
+      button.disabled = true;
+      try {
+        const isSaved = await window.WhereUser.toggleFavorite(id);
+        button.setAttribute("aria-pressed", String(isSaved));
+        button.setAttribute("aria-label", `${isSaved ? "Remove" : "Save"} ${cafes.find((cafe) => cafe.id === id).name}`);
+      } catch (error) {
+        count.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
     }));
   };
   document.querySelector("#explore-filters").addEventListener("input", () => render(true));

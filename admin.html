@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WHERE? CMS</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="admin.js" defer></script>
+</head>
+<body class="cms-page">
+  <main class="cms-shell">
+    <header class="cms-header">
+      <a class="brand-image brand-image--header" href="index.html" aria-label="WHERE? home">
+        <img src="where.png" alt="WHERE?">
+      </a>
+      <div>
+        <p class="eyebrow">CONTENT MANAGEMENT</p>
+        <h1>Admin.</h1>
+      </div>
+      <button class="cms-logout" id="cms-logout" type="button" hidden>Log out</button>
+    </header>
+
+    <section class="cms-login" id="cms-login" hidden>
+      <h2>Log in to the CMS.</h2>
+      <p>Use an administrator account created from the project CLI.</p>
+      <form id="cms-login-form" class="cms-form cms-login-form">
+        <label>Username<input name="username" autocomplete="username" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="auth-submit" type="submit">Log in</button>
+      </form>
+    </section>
+
+    <section class="cms-workspace" id="cms-workspace" hidden>
+      <nav class="cms-tabs" aria-label="CMS sections">
+        <button class="cms-tab is-active" type="button" data-cms-tab="cafes">Cafes</button>
+        <button class="cms-tab" type="button" data-cms-tab="homepage">Homepage</button>
+      </nav>
+
+      <section class="cms-panel is-active" id="cms-cafes">
+        <div class="cms-cafe-layout">
+          <aside class="cms-cafe-sidebar">
+            <div class="cms-sidebar-heading">
+              <h2>Cafe list</h2>
+              <button class="cms-secondary-button" id="new-cafe" type="button">Add cafe</button>
+            </div>
+            <label class="visually-hidden" for="cms-cafe-search">Search cafes</label>
+            <input id="cms-cafe-search" type="search" placeholder="Search cafes">
+            <div class="cms-cafe-list" id="cms-cafe-list"></div>
+          </aside>
+
+          <div class="cms-edit-area">
+            <form id="cms-cafe-form" class="cms-form">
+              <div class="cms-form-heading">
+                <div>
+                  <p class="eyebrow">CAFE DETAILS</p>
+                  <h2 id="cms-cafe-heading">Add a cafe.</h2>
+                </div>
+                <label class="cms-status">Status
+                  <select name="status">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
+              </div>
+              <input name="id" type="hidden">
+              <div class="cms-fields-grid">
+                <label>Name<input name="name" maxlength="255" required></label>
+                <label>Area<select name="area_id" id="cms-area" required></select></label>
+                <label>Category / niche<input name="niche_type" maxlength="200" required></label>
+                <label>Cuisine names <span>comma separated</span><input name="cuisines"></label>
+                <label>Price for two<input name="price_for_two" type="number" min="0" step="0.01"></label>
+                <label>Display price text<input name="price_range"></label>
+                <label>Contact number<input name="contact" type="tel"></label>
+                <label>Maps directions URL<input name="maps_url" type="url"></label>
+                <label class="cms-field-wide">Address<textarea name="address" rows="2" required></textarea></label>
+                <label class="cms-field-wide">Vibe / description<textarea name="vibe" rows="3"></textarea></label>
+                <label>Weekday hours <span>Mon–Fri, AM/PM</span><textarea name="weekday_hours" rows="2"></textarea></label>
+                <label>Weekend hours <span>Sat–Sun, AM/PM</span><textarea name="weekend_hours" rows="2"></textarea></label>
+                <label class="cms-field-wide">Hours notes / exceptions<textarea name="hours_note" rows="2"></textarea></label>
+                <label class="cms-field-wide">More to know<textarea name="more_info" rows="2"></textarea></label>
+                <label class="cms-field-wide">Original schedule text<textarea name="timing" rows="2"></textarea></label>
+              </div>
+
+              <section class="cms-subsection">
+                <div class="cms-sidebar-heading">
+                  <div><p class="eyebrow">FEATURES</p><h3>Amenities</h3></div>
+                  <button class="cms-secondary-button" id="add-amenity" type="button">Add amenity</button>
+                </div>
+                <div class="cms-amenities" id="cms-amenities"></div>
+              </section>
+
+              <section class="cms-subsection">
+                <div><p class="eyebrow">PHOTOS</p><h3>Cafe gallery</h3></div>
+                <p class="cms-help">Choose up to 24 catalog images. Gallery order follows the catalog list; the first selected image is the cover.</p>
+                <div class="cms-gallery-picker" id="cms-gallery-picker"></div>
+              </section>
+
+              <div class="cms-actions">
+                <button class="auth-submit" type="submit">Save cafe</button>
+                <button class="cms-danger-button" id="archive-cafe" type="button" hidden>Archive cafe</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="cms-panel" id="cms-homepage">
+        <form class="cms-form cms-home-form" id="cms-home-form">
+          <p class="eyebrow">HOME PAGE COPY</p>
+          <h2>Sections.</h2>
+          <div id="cms-home-sections"></div>
+          <div class="cms-subsection">
+            <p class="eyebrow">FEATURED PLACES</p>
+            <h3>Choose and order the home page cafes.</h3>
+            <div class="cms-featured-list" id="cms-featured-list"></div>
+          </div>
+          <button class="auth-submit" type="submit">Save homepage</button>
+        </form>
+      </section>
+    </section>
+
+    <p class="cms-message" id="cms-message" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

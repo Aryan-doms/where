@@ -1,66 +1,94 @@
-const WHERE_USERS_KEY = "whereUsers";
-const WHERE_SESSION_KEY = "whereSession";
-const WHERE_FAVORITES_KEY = "whereFavorites";
+const WHERE_PROFILE_IMAGE_PREFIX = "whereProfileImage:";
 
-function whereReadUsers() {
+let whereUser = null;
+let whereFavoriteIds = [];
+let whereCsrfToken = "";
+let whereInitializationError = null;
+
+async function whereJsonRequest(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(options.body ? { "Content-Type": "application/json" } : {})
+    }
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || `Request failed (HTTP ${response.status}).`);
+  return result;
+}
+
+async function whereRefreshState() {
+  const result = await whereJsonRequest("api/user.php?action=state");
+  whereUser = result.user;
+  whereCsrfToken = result.csrf_token;
+  whereFavoriteIds = whereUser
+    ? (await whereJsonRequest("api/user.php?action=favorites")).favorites
+    : [];
+  whereRenderAccountNav();
+  return whereUser;
+}
+
+const whereReady = whereRefreshState().catch((error) => {
+  whereInitializationError = error;
+  console.error("Account state could not be loaded from MySQL.", error);
+  whereRenderAccountNav();
+  return null;
+});
+
+function whereProfileImage(user) {
+  if (!user) return "where.png";
   try {
-    return JSON.parse(localStorage.getItem(WHERE_USERS_KEY) || "[]");
+    return localStorage.getItem(`${WHERE_PROFILE_IMAGE_PREFIX}${user.username}`)
+      || user.profile_image
+      || "where.png";
   } catch (error) {
-    console.error("Stored WHERE? users could not be read.", error);
-    return [];
+    console.error("The saved profile picture could not be read.", error);
+    return user.profile_image || "where.png";
   }
-}
-
-function whereCurrentUser() {
-  const username = localStorage.getItem(WHERE_SESSION_KEY);
-  return whereReadUsers().find((user) => user.username === username) || null;
-}
-
-function whereFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem(WHERE_FAVORITES_KEY) || "[]");
-  } catch (error) {
-    console.error("Stored WHERE? favorites could not be read.", error);
-    return [];
-  }
-}
-
-function whereHasFavorite(id) {
-  return whereFavorites().includes(id);
-}
-
-function whereToggleFavorite(id) {
-  const favorites = whereFavorites();
-  const next = favorites.includes(id)
-    ? favorites.filter((favoriteId) => favoriteId !== id)
-    : [...favorites, id];
-  localStorage.setItem(WHERE_FAVORITES_KEY, JSON.stringify(next));
-  return next.includes(id);
-}
-
-function whereEscapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[character]);
 }
 
 function whereRenderAccountNav() {
   document.querySelectorAll("[data-account-nav]").forEach((element) => {
-    const user = whereCurrentUser();
-    element.href = user ? "profile.html" : "login.html";
+    element.href = whereUser ? "profile.html" : "login.html";
     element.className = "profile-nav";
-    element.innerHTML = user
-      ? `<img src="${user.profileImage || "where.png"}" alt="">`
+    element.innerHTML = whereUser
+      ? `<img src="${whereProfileImage(whereUser)}" alt="">`
       : "Log in";
-    element.setAttribute("aria-label", user ? `Open ${user.username}'s profile` : "Log in");
+    element.setAttribute("aria-label", whereUser ? `Open ${whereUser.username}'s profile` : "Log in");
   });
 }
 
 window.WhereUser = {
-  current: whereCurrentUser,
-  favorites: whereFavorites,
-  hasFavorite: whereHasFavorite,
-  toggleFavorite: whereToggleFavorite,
+  ready: whereReady,
+  current: () => whereUser,
+  favorites: () => [...whereFavoriteIds],
+  hasFavorite: (id) => whereFavoriteIds.includes(id),
+  async refresh() {
+    whereInitializationError = null;
+    return whereRefreshState();
+  },
+  async request(action, data = {}) {
+    await whereReady;
+    if (whereInitializationError) throw whereInitializationError;
+    return whereJsonRequest(`api/user.php?action=${encodeURIComponent(action)}`, {
+      method: "POST",
+      headers: { "X-CSRF-Token": whereCsrfToken },
+      body: JSON.stringify({ ...data, action })
+    });
+  },
+  async toggleFavorite(id) {
+    const result = await this.request("toggle_favorite", { cafe_id: id });
+    whereFavoriteIds = result.saved
+      ? [...whereFavoriteIds.filter((favoriteId) => favoriteId !== id), id]
+      : whereFavoriteIds.filter((favoriteId) => favoriteId !== id);
+    return result.saved;
+  },
+  saveProfileImage(username, image) {
+    localStorage.setItem(`${WHERE_PROFILE_IMAGE_PREFIX}${username}`, image);
+    whereRenderAccountNav();
+  },
   renderAccountNav: whereRenderAccountNav
 };
 
