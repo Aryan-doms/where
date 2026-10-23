@@ -90,7 +90,7 @@ async function setupExplore() {
   const filterDialog = document.querySelector("#filter-dialog");
   const filterForm = document.querySelector("#filter-form");
   const filterCount = document.querySelector("#filter-count");
-  let visibleCount = 6;
+  let visibleCount = 15;
   const areas = [...new Set(cafes.map((cafe) => cafe.area))].sort();
   areas.forEach((item) => area.insertAdjacentHTML("beforeend", `<option value="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</option>`));
   [...new Set(cafes.flatMap((cafe) => cafe.cuisine.split(",").map((item) => item.trim())))].sort().forEach((item) => cuisine.insertAdjacentHTML("beforeend", `<option value="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</option>`));
@@ -104,7 +104,7 @@ async function setupExplore() {
     render();
   }));
   const render = (resetVisible = false) => {
-    if (resetVisible) visibleCount = 6;
+    if (resetVisible) visibleCount = 15;
     const query = search.value.trim().toLowerCase();
     const filtered = cafes.filter((cafe) => {
       const haystack = `${cafe.name} ${cafe.area} ${cafe.cuisine} ${cafe.niche}`.toLowerCase();
@@ -142,7 +142,7 @@ async function setupExplore() {
     render(true);
   });
   showMore.addEventListener("click", () => {
-    visibleCount += 5;
+    visibleCount += 15;
     render();
   });
   render(true);
