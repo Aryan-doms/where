@@ -407,7 +407,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .explore-chip { flex: 0 0 auto; padding: 9px 14px; border: 1px solid #171b2530; border-radius: 99px; color: #4f5358; background: #fff; font: inherit; font-size: .7rem; cursor: pointer; }
 .explore-chip:hover, .explore-chip.is-active { border-color: var(--ink); color: #fff; background: var(--ink); }
 .explore-count { color: var(--muted); font-size: .7rem; font-weight: 700; text-transform: uppercase; }
-.explore-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 34px 16px; margin-top: 24px; }
+.explore-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 42px 22px; margin-top: 24px; }
 .explore-card { min-width: 0; }
 .explore-card__media { position: relative; aspect-ratio: 1.5; overflow: hidden; border-radius: 16px; background: #e9e5dd; isolation: isolate; }
 .explore-card__media::after { position: absolute; z-index: 1; inset: 0; content: ""; background: linear-gradient(180deg, #171b2538 0%, transparent 38%, #171b25a8 100%); pointer-events: none; }
