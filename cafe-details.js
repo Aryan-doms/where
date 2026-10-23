@@ -62,6 +62,7 @@ async function loadCafeRows() {
       const source = Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""]));
       return {
         id: `cafe-${String(index + 1).padStart(3, "0")}`,
+        index,
         name: source.Name,
         area: source["Surat Area"].replace(/^Surat\s*\/\s*/, "").trim(),
         location: source.Location,
@@ -223,16 +224,26 @@ async function showCafe() {
     try {
       const images = await loadCatalogImages();
       if (images.length) {
-        const cover = document.getElementById("cafe-cover");
+        const gallery = document.getElementById("cafe-gallery");
         const image = document.getElementById("cafe-cover-image");
-        image.src = images[Math.floor(Math.random() * images.length)];
-        image.alt = "Cafe scene from the WHERE? photo collection";
-        image.addEventListener("error", () => {
-          cover.classList.add("detail-cover--failed");
-          image.alt = "Cafe photo unavailable";
-        }, { once: true });
-        cover.hidden = false;
-        cover.classList.add("detail-cover--ready");
+        const imageSet = Array.from({ length: 5 }, (_, imageIndex) => images[(cafe.index * 5 + imageIndex) % images.length]);
+        imageSet.forEach((imageUrl, imageIndex) => {
+          const galleryImage = imageIndex === 0
+            ? image
+            : document.getElementById(`cafe-gallery-image-${imageIndex}`);
+          galleryImage.src = imageUrl;
+          galleryImage.alt = `${cafe.name} photo ${imageIndex + 1}`;
+          galleryImage.addEventListener("error", () => {
+            galleryImage.closest("figure").classList.add("detail-gallery--failed");
+            galleryImage.alt = "Cafe photo unavailable";
+          }, { once: true });
+        });
+        const photoList = document.getElementById("all-photo-list");
+        photoList.innerHTML = imageSet.map((imageUrl, imageIndex) => `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cafe.name)} photo ${imageIndex + 1}" loading="lazy">`).join("");
+        const photoDialog = document.getElementById("all-photos-dialog");
+        document.querySelector(".detail-gallery__all").addEventListener("click", () => photoDialog.showModal());
+        document.getElementById("close-all-photos").addEventListener("click", () => photoDialog.close());
+        gallery.hidden = false;
       }
     } catch (imageError) {
       console.error("Cafe photos could not be loaded.", imageError);

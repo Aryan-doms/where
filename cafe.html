@@ -45,9 +45,20 @@
         <strong id="cafe-price"></strong>
         <span class="detail-price__note">approx.</span>
       </div>
-      <figure class="detail-cover" id="cafe-cover" hidden>
-        <img id="cafe-cover-image" alt="" fetchpriority="high">
-      </figure>
+      <div class="detail-gallery" id="cafe-gallery" hidden aria-label="Cafe photos">
+        <figure class="detail-gallery__lead">
+          <img id="cafe-cover-image" alt="" fetchpriority="high">
+        </figure>
+        <div class="detail-gallery__tiles">
+          <figure><img id="cafe-gallery-image-1" alt="" loading="lazy"></figure>
+          <figure><img id="cafe-gallery-image-2" alt="" loading="lazy"></figure>
+          <figure><img id="cafe-gallery-image-3" alt="" loading="lazy"></figure>
+          <figure class="detail-gallery__last">
+            <img id="cafe-gallery-image-4" alt="" loading="lazy">
+            <button type="button" class="detail-gallery__all">▦ <span>Show all photos</span></button>
+          </figure>
+        </div>
+      </div>
     </section>
 
     <section class="detail-facts" aria-label="Cafe information" hidden>
@@ -119,6 +130,15 @@
 
     <p class="detail-error" id="detail-error" role="status" hidden></p>
   </main>
+
+  <dialog class="photo-dialog" id="all-photos-dialog" aria-labelledby="all-photos-title">
+    <div class="photo-dialog__panel">
+      <button class="review-dialog__close" id="close-all-photos" type="button" aria-label="Close photos">×</button>
+      <p class="detail-label">THE PHOTO SET</p>
+      <h2 id="all-photos-title">A closer look.</h2>
+      <div class="photo-dialog__grid" id="all-photo-list"></div>
+    </div>
+  </dialog>
 
   <dialog class="review-dialog" id="all-reviews-dialog" aria-labelledby="all-reviews-title">
     <div class="review-dialog__form">
