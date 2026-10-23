@@ -246,9 +246,6 @@ loadHomepage();
 const heroVideo = document.querySelector(".hero__video");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const mobileViewport = window.matchMedia("(max-width: 560px)");
-const siteHeader = document.querySelector(".site-header");
-const menuToggle = document.querySelector(".menu-toggle");
-const mainNav = document.querySelector("#main-nav");
 document.querySelector("#current-year").textContent = new Date().getFullYear();
 
 const footerStickers = document.querySelector(".footer-stickers");
@@ -293,35 +290,6 @@ function setHeroVideoMotion() {
   }
 }
 
-function updateHeader() {
-  siteHeader.classList.toggle("is-scrolled", window.scrollY > 24);
-}
-
-let lastScrollY = window.scrollY;
-function handleHeaderScroll() {
-  const currentScrollY = window.scrollY;
-  const movingDown = currentScrollY > lastScrollY;
-
-  siteHeader.classList.toggle("is-hidden", movingDown && currentScrollY > 80);
-  updateHeader();
-  lastScrollY = currentScrollY;
-}
-
-function closeMenu() {
-  mainNav.classList.remove("is-open");
-  menuToggle.setAttribute("aria-expanded", "false");
-  menuToggle.querySelector(".visually-hidden").textContent = "Open menu";
-}
-
-menuToggle.addEventListener("click", () => {
-  const isOpen = mainNav.classList.toggle("is-open");
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-  menuToggle.querySelector(".visually-hidden").textContent = isOpen ? "Close menu" : "Open menu";
-});
-mainNav.addEventListener("click", (event) => {
-  if (event.target.matches("a")) closeMenu();
-});
-window.addEventListener("scroll", handleHeaderScroll, { passive: true });
 mobileViewport.addEventListener("change", setHeroVideoSource);
 heroVideo.addEventListener("loadeddata", setHeroVideoMotion);
 heroVideo.addEventListener("loadedmetadata", setHeroVideoMotion);

@@ -26,6 +26,19 @@ function escapeExploreHtml(value) {
   })[character]);
 }
 
+function fixedTiming(timing) {
+  const segments = timing.split(";").map((segment) => segment.trim()).filter(Boolean);
+  return segments
+    .flatMap((segment) => {
+      const hours = segment.replace(/^[^:]+:\s*/, "").trim();
+      return hours.split(",").map((period) => period.trim()).filter(Boolean);
+    })
+    .slice(0, 2)
+    .join("\n")
+    .replace(/12midnight/gi, "12:00am")
+    .replace(/12noon/gi, "12:00pm");
+}
+
 function makeExploreCafe(values, headers, index) {
   const source = Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""]));
   return {
@@ -34,7 +47,7 @@ function makeExploreCafe(values, headers, index) {
     area: source["Surat Area"].replace(/^Surat\s*\/\s*/, "").trim(),
     cuisine: source["Cuisine Served / Type of Cafe Cuisine"],
     niche: source["Niche Type of Cafe"],
-    timing: source.Timing,
+    timing: fixedTiming(source.Timing),
     price: source["Price Range"]
   };
 }
@@ -56,19 +69,20 @@ function cafeCard(cafe) {
         ${cafe.image ? `<img src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">` : ""}
         <span class="explore-card__area">${escapeExploreHtml(cafe.area)}</span>
         <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">
-          <span aria-hidden="true">${saved ? "♥" : "♡"}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path>
+          </svg>
         </button>
       </div>
       <div class="explore-card__body">
         <div class="explore-card__topline">
           <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
-          <p class="explore-card__hours">${escapeExploreHtml(cafe.timing)}</p>
+          <p class="explore-card__hours"><span aria-hidden="true">·</span> ${escapeExploreHtml(cafe.timing)}</p>
         </div>
-        <p class="explore-card__cuisine">${escapeExploreHtml(cafe.cuisine)}</p>
-        <dl class="explore-card__details">
-          <div><dt>Type</dt><dd>${escapeExploreHtml(cafe.niche)}</dd></div>
-          <div><dt>Price approx. for two</dt><dd>${escapeExploreHtml(cafe.price.replace(" people (approx.)", ""))}</dd></div>
-        </dl>
+        <div class="explore-card__bottomline">
+          <p class="explore-card__cuisine">${escapeExploreHtml(cafe.cuisine)}</p>
+          <p class="explore-card__price">${escapeExploreHtml(cafe.price.replace(" for two people (approx.)", "").replace(" for two", ""))} for two</p>
+        </div>
       </div>
     </article>
   `;
@@ -117,8 +131,9 @@ async function setupExplore() {
       const id = button.dataset.favoriteId;
       const saved = window.WhereUser.current();
       if (!saved) { window.location.href = "login.html"; return; }
-      window.WhereUser.toggleFavorite(id);
-      render();
+      const isSaved = window.WhereUser.toggleFavorite(id);
+      button.setAttribute("aria-pressed", String(isSaved));
+      button.setAttribute("aria-label", `${isSaved ? "Remove" : "Save"} ${cafe.name}`);
     }));
   };
   document.querySelector("#explore-filters").addEventListener("input", () => render(true));

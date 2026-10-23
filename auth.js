@@ -63,6 +63,7 @@ async function handleSignup(event) {
     username,
     phone,
     passwordHash: await hashPassword(password),
+    createdAt: new Date().toISOString(),
     profileImage: profilePicture?.size ? await readImage(profilePicture) : ""
   };
   users.push(user);
@@ -152,8 +153,10 @@ function setupProfile() {
     return;
   }
 
+  const memberSince = user.createdAt ? new Date(user.createdAt) : new Date();
+  const elapsedDays = Math.max(0, Math.floor((Date.now() - memberSince.getTime()) / 86400000));
+  document.querySelector("#profile-member-days").textContent = elapsedDays;
   document.querySelector("#profile-username").textContent = user.username;
-  document.querySelector("#profile-username-copy").textContent = user.username;
   document.querySelector("#profile-phone").textContent = user.phone;
   const image = document.querySelector("#profile-image");
   if (user.profileImage) {

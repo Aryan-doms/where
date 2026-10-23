@@ -50,7 +50,7 @@ function whereRenderAccountNav() {
     element.href = user ? "profile.html" : "login.html";
     element.className = "profile-nav";
     element.innerHTML = user
-      ? `<img src="${user.profileImage || "where.png"}" alt=""> <span>${whereEscapeHtml(user.username)}</span>`
+      ? `<img src="${user.profileImage || "where.png"}" alt="">`
       : "Log in";
     element.setAttribute("aria-label", user ? `Open ${user.username}'s profile` : "Log in");
   });
