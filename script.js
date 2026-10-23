@@ -34,15 +34,19 @@ function renderNicheCards() {
 
 function renderFeaturedCafes() {
   featuredGrid.innerHTML = cafes.slice(0, 6).map((cafe, index) => `
-    <article class="featured-card">
+    <a class="featured-card" href="cafe.html?id=${encodeURIComponent(cafe.id)}" aria-label="View details for ${escapeHtml(cafe.name)}">
       ${referenceImages.length ? `
         <div class="featured-card__media">
           <img class="featured-card__image featured-card__image--primary" src="${escapeHtml(referenceImages[(index * 2) % referenceImages.length])}" alt="" loading="lazy">
           <img class="featured-card__image featured-card__image--hover" src="${escapeHtml(referenceImages[(index * 2 + 1) % referenceImages.length])}" alt="" loading="lazy">
           <span class="featured-card__area">${escapeHtml(cafe.area)}</span>
           <h3>${escapeHtml(cafe.name)}</h3>
-        </div>` : ""}
-    </article>`).join("");
+        </div>` : `
+        <div class="featured-card__fallback">
+          <span>${escapeHtml(cafe.area)}</span>
+          <h3>${escapeHtml(cafe.name)}</h3>
+        </div>`}
+    </a>`).join("");
 }
 
 function renderAreaDirectory() {
@@ -114,89 +118,103 @@ function setupSlider() {
   start();
 }
 
-function parseCsvRow(row) {
-  const values = [];
+async function loadCafeDataset() {
+  const response = await fetch("surat_cafes_data.csv");
+  if (!response.ok) throw new Error(`Could not load local cafe data (HTTP ${response.status}).`);
+
+  const rows = parseCsvDocument(await response.text());
+  const headers = rows.shift();
+  if (!headers || !headers.includes("Name") || !headers.includes("Niche Type of Cafe")) {
+    throw new Error("The local cafe CSV is missing required columns.");
+  }
+
+  const cafes = rows
+    .filter((row) => row.some((value) => value.trim()))
+    .map((values, index) => {
+      const record = Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""]));
+      return {
+        ...record,
+        id: `cafe-${String(index + 1).padStart(3, "0")}`,
+        name: record.Name,
+        area: record["Surat Area"].replace(/^Surat\s*\/\s*/, "").trim(),
+        niche_type: record["Niche Type of Cafe"],
+        price_range: record["Price Range"],
+        cuisine: record["Cuisine Served / Type of Cafe Cuisine"],
+        timing: record.Timing,
+        contact: record["Contact Details Number"],
+        vibe: record["Vibe (Ambiance)"],
+        location: record.Location,
+        more_info: record["More Info"]
+      };
+    });
+
+  const typeCounts = new Map();
+  const counts = new Map();
+  cafes.forEach((cafe) => {
+    if (cafe.niche_type) typeCounts.set(cafe.niche_type, (typeCounts.get(cafe.niche_type) || 0) + 1);
+    if (cafe.area) counts.set(cafe.area, (counts.get(cafe.area) || 0) + 1);
+  });
+
+  return {
+    cafes,
+    types: [...typeCounts.entries()]
+      .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
+      .map(([name, count]) => ({ name, count })),
+    areas: [...counts.entries()]
+      .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
+      .map(([name, count]) => ({ name, count }))
+  };
+}
+
+function parseCsvDocument(text) {
+  const rows = [];
+  let row = [];
   let value = "";
   let quoted = false;
 
-  for (let index = 0; index < row.length; index += 1) {
-    const character = row[index];
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
     if (character === '"') {
-      if (quoted && row[index + 1] === '"') {
+      if (quoted && text[index + 1] === '"') {
         value += '"';
         index += 1;
       } else {
         quoted = !quoted;
       }
     } else if (character === "," && !quoted) {
-      values.push(value);
+      row.push(value);
+      value = "";
+    } else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(value);
+      rows.push(row);
+      row = [];
       value = "";
     } else {
       value += character;
     }
   }
 
-  values.push(value);
-  return values;
-}
+  if (value || row.length) {
+    row.push(value);
+    rows.push(row);
+  }
 
-async function loadLocalCafes() {
-  const response = await fetch("surat_cafes_data.csv");
-  if (!response.ok) throw new Error(`Could not load local cafe data (HTTP ${response.status}).`);
-
-  const rows = (await response.text()).trim().split(/\r?\n/).slice(1);
-  return rows.slice(0, 6).map((row) => {
-    const values = parseCsvRow(row);
-    return {
-      name: values[0],
-      area: values[1].replace(/^Surat\s*\/\s*/, ""),
-      niche_type: values[4],
-      price_range: values[7]
-    };
-  });
-}
-
-async function loadLocalCafeTypes() {
-  const response = await fetch("surat_cafes_data.csv");
-  if (!response.ok) throw new Error(`Could not load local cafe data (HTTP ${response.status}).`);
-
-  const rows = (await response.text()).trim().split(/\r?\n/).slice(1);
-  const counts = new Map();
-  rows.forEach((row) => {
-    const type = parseCsvRow(row)[4];
-    if (type) counts.set(type, (counts.get(type) || 0) + 1);
-  });
-
-  return [...counts.entries()]
-    .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
-    .map(([name, count]) => ({ name, count }));
-}
-
-async function loadLocalAreas() {
-  const response = await fetch("surat_cafes_data.csv");
-  if (!response.ok) throw new Error(`Could not load local cafe data (HTTP ${response.status}).`);
-
-  const rows = (await response.text()).trim().split(/\r?\n/).slice(1);
-  const counts = new Map();
-  rows.forEach((row) => {
-    const area = parseCsvRow(row)[1].replace(/^Surat\s*\/\s*/, "").trim();
-    if (area) counts.set(area, (counts.get(area) || 0) + 1);
-  });
-
-  return [...counts.entries()]
-    .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
-    .map(([name, count]) => ({ name, count }));
+  if (rows.length) rows[0][0] = rows[0][0].replace(/^\uFEFF/, "");
+  return rows;
 }
 
 async function loadCatalogImages() {
   const response = await fetch("catalog.csv");
   if (!response.ok) throw new Error(`Could not load catalog images (HTTP ${response.status}).`);
 
-  const rows = (await response.text()).trim().split(/\r?\n/).slice(1);
+  const rows = parseCsvDocument(await response.text());
+  const headers = rows.shift();
+  const imageIndex = headers?.indexOf("image_url") ?? -1;
+  if (imageIndex < 0) throw new Error("The image catalogue is missing its image_url column.");
+
   const images = rows
-    .map((row) => parseCsvRow(row)[5])
-    .filter(Boolean)
-    .flatMap((value) => value.split(" | "))
+    .flatMap((row) => (row[imageIndex] || "").split(" | "))
     .filter((url, index, values) => values.indexOf(url) === index);
 
   return images.sort(() => Math.random() - 0.5);
@@ -210,34 +228,17 @@ async function loadHomepage() {
   }
 
   try {
-    const response = await fetch("api/home-data.php");
-    if (!response.ok) throw new Error(`Could not load cafe data (HTTP ${response.status}).`);
-
-    const data = await response.json();
-    if (!Array.isArray(data.cafes) || !Array.isArray(data.types) || !Array.isArray(data.areas)) {
-      throw new Error("Cafe data response is not in the expected format.");
-    }
-
-    cafes = data.cafes;
+    const data = await loadCafeDataset();
+    cafes = data.cafes.slice(0, 6);
     cafeTypes = data.types;
     areas = data.areas;
     renderNicheCards();
     setupSlider();
+    renderFeaturedCafes();
+    renderAreaDirectory();
   } catch (error) {
     console.error("Homepage cafe data could not be loaded.", error);
-    try {
-      cafes = await loadLocalCafes();
-      cafeTypes = await loadLocalCafeTypes();
-      areas = await loadLocalAreas();
-      renderNicheCards();
-      setupSlider();
-    } catch (fallbackError) {
-      console.error("The local cafe category data could not be loaded.", fallbackError);
-    }
   }
-
-  if (cafes.length) renderFeaturedCafes();
-  if (areas.length) renderAreaDirectory();
 }
 loadHomepage();
 
