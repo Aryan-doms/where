@@ -29,7 +29,7 @@
       <div class="detail-hero__copy">
         <p class="detail-kicker"><span id="cafe-area"></span><span id="cafe-id"></span></p>
         <h1 id="cafe-name"></h1>
-        <p class="detail-niche" id="cafe-niche"></p>
+        <p class="detail-niche" id="cafe-cuisine-summary"></p>
       </div>
       <div class="detail-price">
         <span class="detail-label">PRICE FOR TWO</span>
@@ -97,8 +97,19 @@
         </div>
       </div>
 
-      <div class="detail-review" aria-label="Cafe description">
-        <p class="detail-review__message" id="review-vibe"></p>
+      <div class="detail-review" aria-labelledby="reviews-heading">
+        <div class="detail-review__heading">
+          <div>
+            <p class="detail-label">FROM THE TABLE</p>
+            <h2 id="reviews-heading">What people say.</h2>
+          </div>
+          <button class="detail-review__action" id="see-all-reviews" type="button">See all</button>
+        </div>
+        <div class="detail-review__list" id="review-list"></div>
+        <button class="detail-review__add" id="add-review" type="button">
+          <span class="detail-review__avatar detail-review__avatar--add" aria-hidden="true">+</span>
+          <span>Add review</span>
+        </button>
       </div>
     </section>
 
@@ -112,6 +123,28 @@
 
     <p class="detail-error" id="detail-error" role="status" hidden></p>
   </main>
+
+  <dialog class="review-dialog" id="review-dialog" aria-labelledby="review-dialog-title">
+    <form class="review-dialog__form" id="review-form" method="dialog">
+      <button class="review-dialog__close" id="close-review-dialog" type="button" aria-label="Close">×</button>
+      <p class="detail-label">YOUR TAKE</p>
+      <h2 id="review-dialog-title">Leave a review.</h2>
+      <label for="review-name">Name</label>
+      <input id="review-name" name="review-name" type="text" maxlength="40" required>
+      <label for="review-message">Review</label>
+      <textarea id="review-message" name="review-message" rows="4" maxlength="280" required></textarea>
+      <button class="detail-review__submit" type="submit">Post review</button>
+    </form>
+  </dialog>
+
+  <dialog class="review-dialog" id="all-reviews-dialog" aria-labelledby="all-reviews-title">
+    <div class="review-dialog__form">
+      <button class="review-dialog__close" id="close-all-reviews" type="button" aria-label="Close">×</button>
+      <p class="detail-label">THE FULL THREAD</p>
+      <h2 id="all-reviews-title">All reviews.</h2>
+      <div class="review-dialog__list" id="all-review-list"></div>
+    </div>
+  </dialog>
 
   <footer class="detail-footer">
     <a class="brand-image brand-image--footer" href="index.html" aria-label="WHERE? home">
