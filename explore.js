@@ -36,17 +36,29 @@ function makeExploreCafe(values, headers, index) {
   };
 }
 
+async function loadExploreImages() {
+  const response = await fetch("catalog.csv");
+  if (!response.ok) return [];
+  const [headers, ...rows] = parseExploreCsv(await response.text());
+  const imageIndex = headers.indexOf("image_url");
+  if (imageIndex < 0) return [];
+  return rows.map((row) => row[imageIndex] || "").filter(Boolean);
+}
+
 function cafeCard(cafe) {
   const saved = window.WhereUser.hasFavorite(cafe.id);
   return `
     <article class="explore-card">
-      <div class="explore-card__topline">
-        <span>${escapeExploreHtml(cafe.area)}</span>
+      <div class="explore-card__media">
+        ${cafe.image ? `<img src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">` : ""}
+        <span class="explore-card__area">${escapeExploreHtml(cafe.area)}</span>
         <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">${saved ? "♥" : "♡"}</button>
       </div>
-      <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
-      <p>${escapeExploreHtml(cafe.niche)}</p>
-      <small>${escapeExploreHtml(cafe.cuisine)}</small>
+      <div class="explore-card__body">
+        <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
+        <p>${escapeExploreHtml(cafe.niche)}</p>
+        <small>${escapeExploreHtml(cafe.cuisine)}</small>
+      </div>
     </article>
   `;
 }
@@ -56,13 +68,25 @@ async function setupExplore() {
   if (!response.ok) throw new Error(`Could not load cafes (HTTP ${response.status}).`);
   const [headers, ...rows] = parseExploreCsv(await response.text());
   const cafes = rows.filter((row) => row.some((value) => value.trim())).map((row, index) => makeExploreCafe(row, headers, index));
+  const images = await loadExploreImages();
+  cafes.forEach((cafe, index) => { cafe.image = images[index % images.length] || ""; });
   const search = document.querySelector("#cafe-search");
   const area = document.querySelector("#area-filter");
   const cuisine = document.querySelector("#cuisine-filter");
   const grid = document.querySelector("#explore-grid");
   const count = document.querySelector("#explore-count");
-  [...new Set(cafes.map((cafe) => cafe.area))].sort().forEach((item) => area.insertAdjacentHTML("beforeend", `<option value="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</option>`));
+  const areas = [...new Set(cafes.map((cafe) => cafe.area))].sort();
+  areas.forEach((item) => area.insertAdjacentHTML("beforeend", `<option value="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</option>`));
   [...new Set(cafes.flatMap((cafe) => cafe.cuisine.split(",").map((item) => item.trim())))].sort().forEach((item) => cuisine.insertAdjacentHTML("beforeend", `<option value="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</option>`));
+  document.querySelector("#explore-chips").innerHTML = [
+    '<button class="explore-chip is-active" type="button" data-area="">All spots</button>',
+    ...areas.slice(0, 7).map((item) => `<button class="explore-chip" type="button" data-area="${escapeExploreHtml(item)}">${escapeExploreHtml(item)}</button>`)
+  ].join("");
+  document.querySelectorAll(".explore-chip").forEach((chip) => chip.addEventListener("click", () => {
+    area.value = chip.dataset.area;
+    document.querySelectorAll(".explore-chip").forEach((item) => item.classList.toggle("is-active", item === chip));
+    render();
+  }));
   const render = () => {
     const query = search.value.trim().toLowerCase();
     const filtered = cafes.filter((cafe) => {

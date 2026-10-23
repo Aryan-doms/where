@@ -21,25 +21,28 @@
   </header>
   <main class="explore-main">
     <div class="explore-heading">
-      <p class="eyebrow">Everywhere worth going</p>
+      <p class="eyebrow">SURAT · CAFE GUIDE</p>
       <h1>All spots.</h1>
-      <p>Search the current Surat cafe list and save the places you want to keep close.</p>
+      <p>Find a place for your next coffee, meal, or slow afternoon.</p>
     </div>
-    <form class="explore-filters" id="explore-filters">
+    <form class="explore-searchbar" id="explore-filters">
       <label class="explore-search">
         <span class="visually-hidden">Search cafes</span>
-        <input id="cafe-search" type="search" placeholder="Search by name, area or cuisine">
+        <input id="cafe-search" type="search" placeholder="Search cafes, areas or cuisines">
       </label>
-      <label>
+      <label class="explore-select">
         <span class="visually-hidden">Filter by area</span>
         <select id="area-filter"><option value="">All areas</option></select>
       </label>
-      <label>
+      <label class="explore-select">
         <span class="visually-hidden">Filter by cuisine</span>
         <select id="cuisine-filter"><option value="">All cuisines</option></select>
       </label>
     </form>
-    <p class="explore-count" id="explore-count" aria-live="polite"></p>
+    <div class="explore-toolbar">
+      <div class="explore-chips" id="explore-chips" aria-label="Quick area filters"></div>
+      <p class="explore-count" id="explore-count" aria-live="polite"></p>
+    </div>
     <div class="explore-grid" id="explore-grid"></div>
   </main>
 </body>
