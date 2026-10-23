@@ -1,3 +1,4 @@
+document.addEventListener("where:layout-ready", () => {
 const usersKey = "whereUsers";
 const sessionKey = "whereSession";
 
@@ -186,3 +187,4 @@ document.querySelector("#signup-form")?.addEventListener("submit", handleSignup)
 document.querySelector("#login-form")?.addEventListener("submit", handleLogin);
 if (document.body.dataset.page === "auth") redirectIfSignedIn();
 if (document.body.dataset.page === "profile") setupProfile();
+});

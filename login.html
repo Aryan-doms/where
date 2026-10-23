@@ -5,22 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Log in — WHERE?</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="footer.js" defer></script>
+  <script src="shared-layout.js" defer></script>
   <script src="user-ui.js" defer></script>
   <script src="auth.js" defer></script>
 </head>
 <body class="auth-page" data-page="auth">
-  <header class="site-header site-header--plain">
-    <a class="brand-image brand-image--header" href="index.html#home" aria-label="WHERE? home"><img src="where.png" alt="WHERE?"></a>
-    <nav class="main-nav" aria-label="Main navigation">
-      <a href="explore.html">Explore</a>
-      <a href="index.html#home" class="nav-disabled" title="Guides coming soon">Guides</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#home" class="nav-disabled" title="Contact coming soon">Contact</a>
-      <a href="signup.html">Sign up</a>
-      <a href="profile.html" data-account-nav>Profile</a>
-    </nav>
-  </header>
+  <div data-where-header></div>
   <main class="auth-layout">
     <section class="auth-card" aria-labelledby="login-title">
       <p class="eyebrow">Welcome back</p>
@@ -37,5 +27,6 @@
       <p class="auth-switch">New here? <a href="signup.html">Create an account</a></p>
     </section>
   </main>
+  <div data-where-footer></div>
 </body>
 </html>

@@ -64,7 +64,9 @@ window.WhereUser = {
   renderAccountNav: whereRenderAccountNav
 };
 
-whereRenderAccountNav();
-document.querySelectorAll("#current-year").forEach((element) => {
-  element.textContent = new Date().getFullYear();
+document.addEventListener("where:layout-ready", () => {
+  whereRenderAccountNav();
+  document.querySelectorAll("#current-year").forEach((element) => {
+    element.textContent = new Date().getFullYear();
+  });
 });

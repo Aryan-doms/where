@@ -1,3 +1,4 @@
+document.addEventListener("where:layout-ready", () => {
 function parseExploreCsv(text) {
   const rows = [];
   let row = [];
@@ -110,4 +111,5 @@ async function setupExplore() {
 setupExplore().catch((error) => {
   console.error("Explore list could not be loaded.", error);
   document.querySelector("#explore-grid").textContent = error.message;
+});
 });

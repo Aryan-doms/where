@@ -1,3 +1,4 @@
+document.addEventListener("where:layout-ready", () => {
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
@@ -244,3 +245,4 @@ async function showCafe() {
 }
 
 showCafe();
+});

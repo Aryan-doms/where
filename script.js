@@ -1,3 +1,4 @@
+document.addEventListener("where:layout-ready", () => {
 const nicheStyles = ["coffee", "bistro", "dessert", "healthy", "travel", "work", "play", "garden", "rooftop"];
 const excludedNiche = "Artisanal Sourdough Pizzeria & European Bistro Cafe";
 const nicheTrack = document.querySelector("#niche-track");
@@ -335,3 +336,4 @@ handleHeaderScroll();
 setHeroVideoSource();
 setHeroVideoMotion();
 reduceMotion.addEventListener("change", setHeroVideoMotion);
+});
