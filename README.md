@@ -4,22 +4,45 @@ A simple cafe-discovery homepage for a college project.
 
 ## Run locally
 
-1. Start MySQL in XAMPP.
-2. Copy `api/config.example.php` to `api/config.php` and enter your local MySQL username and password.
-3. From this folder, run PHP's built-in server:
+The project uses Docker Compose for a consistent local MySQL installation. You
+do not need XAMPP, Homebrew, or MySQL installed directly on your computer.
+
+1. Install Docker Desktop (or another Docker-compatible engine).
+2. Start the MySQL container:
 
    ```sh
-   /Applications/XAMPP/xamppfiles/bin/php -S localhost:8000
+   docker compose up -d
    ```
 
-4. Open <http://localhost:8000>.
+3. Copy `api/config.example.php` to `api/config.php`:
 
-The homepage reads cafes and area counts from the existing `cafecompass` database. It does not create tables or import CSV files. Keep `api/config.php` local and do not commit it.
+   ```sh
+   cp api/config.example.php api/config.php
+   ```
 
-To inspect the existing database from the XAMPP terminal:
+4. From this folder, run PHP's built-in server:
+
+   ```sh
+   php -S localhost:8000
+   ```
+
+5. Open <http://localhost:8000>.
+
+The Docker setup currently creates only the empty `cafecompass` database and
+the local `where` user. The `cafes` and `areas` schema has intentionally not
+been added yet; it will be designed from the finalized frontend features.
+Until then, the homepage will show its existing database-unavailable state
+when the API is requested.
+
+Keep `api/config.php` local and do not commit it. Stop the container with:
 
 ```sh
-/Applications/XAMPP/xamppfiles/bin/mysql -u admin -p cafecompass
+docker compose down
 ```
 
-Enter your local MySQL password when prompted. For example, `SHOW TABLES;` lists tables and `SELECT COUNT(*) FROM cafes;` checks the cafe records.
+The database data is stored in the Docker volume `where_mysql_data`, so
+stopping the container does not delete it. To remove that local data as well:
+
+```sh
+docker compose down -v
+```

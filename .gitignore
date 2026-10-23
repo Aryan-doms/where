@@ -1,2 +1,15 @@
 .DS_Store
 /api/config.php
+
+# Local data-collection and CSV-generation files
+/build_csv.py
+/cafe_details_raw.json
+/fetch_candidates.py
+/fetch_details.py
+/raw_candidates.json
+/surat_areas.csv
+/surat_cafes.csv
+/.env
+/assets/apple.gif
+/assets/apple.png
+/assets/star-doodle.jpg
