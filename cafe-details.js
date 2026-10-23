@@ -157,7 +157,6 @@ function setupReviews(cafe) {
     });
     localStorage.setItem(`whereReviews-${cafe.id}`, JSON.stringify(saved));
     event.currentTarget.reset();
-    setupReviews(cafe);
   });
 }
 
