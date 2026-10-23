@@ -134,24 +134,29 @@ function setupReviews(cafe) {
   list.innerHTML = reviews.slice(0, 3).map(reviewMarkup).join("");
   allList.innerHTML = reviews.map(reviewMarkup).join("");
 
-  const addDialog = document.getElementById("review-dialog");
   const allDialog = document.getElementById("all-reviews-dialog");
-  document.getElementById("add-review").addEventListener("click", () => addDialog.showModal());
   document.getElementById("see-all-reviews").addEventListener("click", () => allDialog.showModal());
-  document.getElementById("close-review-dialog").addEventListener("click", () => addDialog.close());
   document.getElementById("close-all-reviews").addEventListener("click", () => allDialog.close());
+  const sessionUsername = localStorage.getItem("whereSession");
+  const loginNote = document.getElementById("review-login-note");
+  loginNote.innerHTML = sessionUsername
+    ? `Posting as <strong>${escapeHtml(sessionUsername)}</strong>`
+    : 'Log in to add a review. <a href="login.html">Log in</a>';
   document.getElementById("review-form").addEventListener("submit", (event) => {
     event.preventDefault();
+    if (!sessionUsername) {
+      window.location.href = "login.html";
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const saved = JSON.parse(localStorage.getItem(`whereReviews-${cafe.id}`) || "[]");
     saved.unshift({
-      name: form.get("review-name"),
+      name: sessionUsername,
       message: form.get("review-message"),
       image: "where.png"
     });
     localStorage.setItem(`whereReviews-${cafe.id}`, JSON.stringify(saved));
     event.currentTarget.reset();
-    addDialog.close();
     setupReviews(cafe);
   });
 }
@@ -164,10 +169,9 @@ function renderCafe(cafe, allCafes) {
   setText("cafe-area", cafe.area.toUpperCase());
   setText("cafe-id", cafe.id.toUpperCase());
   setText("cafe-name", cafe.name);
-  setText("cafe-cuisine-summary", cafe.cuisine);
+  setText("cafe-cuisine-summary", cafe.niche);
   setText("cafe-price", cafe.price.replace(/\s+for two people \(approx\.\)/i, ""));
   setText("cafe-vibe", cafe.vibe);
-  setText("cafe-location", cafe.location);
   setText("cafe-timing", "Mon–Fri: 12midnight – 12:45am, 8:30am – 12midnight\nSat–Sun: 12midnight – 12:45am, 8:30am – 12midnight");
   setText("map-address", cafe.location);
   setupReviews(cafe);
@@ -175,13 +179,6 @@ function renderCafe(cafe, allCafes) {
 
   const directions = document.getElementById("map-directions");
   directions.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.location)}`;
-
-  document.getElementById("cafe-cuisine").innerHTML = cafe.cuisine
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map((item) => `<span class="detail-tag">${escapeHtml(item)}</span>`)
-    .join("");
 
   const contact = document.getElementById("cafe-contact");
   const phone = cafe.contact.split(/[,;/]/)[0].trim();
