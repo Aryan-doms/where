@@ -56,7 +56,7 @@ function cafeCard(cafe) {
         ${cafe.image ? `<img src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">` : ""}
         <span class="explore-card__area">${escapeExploreHtml(cafe.area)}</span>
         <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">
-          <span aria-hidden="true">${saved ? "♥" : "♡"}</span><span>${saved ? "Saved" : "Save"}</span>
+          <span aria-hidden="true">${saved ? "♥" : "♡"}</span>
         </button>
         <div class="explore-card__overlay">
           <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
