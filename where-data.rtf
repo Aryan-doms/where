@@ -1,0 +1,117 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\
+**Task completed:**\
+\
+No files or database were changed. Here is the proposed full schema for WHERE?, with cafe content, CMS-managed home content, favorites, and simple phone/username/password auth. This is a discussion draft\'97not code to run yet.\
+\
+## 1. `areas` \'97 keep the existing lookup table\
+\
+| Column | Type | Notes |\
+|---|---|---|\
+| `area_id` | `INT UNSIGNED` PK, auto-increment | Stable area key |\
+| `standardized_category` | `VARCHAR(191)` UNIQUE | Existing normalized category |\
+| `display_name` | `VARCHAR(150)` | Name shown in the site/CMS |\
+\
+`area_sources` is already part of the supplied schema. Keep it only if you want to retain the original source-row details; it is not required for regular CMS editing.\
+\
+## 2. `cafes` \'97 one row per cafe\
+\
+| Column | Type | Notes |\
+|---|---|---|\
+| `cafe_id` | `INT UNSIGNED` PK, auto-increment | Stable ID for page URLs and relationships |\
+| `name` | `VARCHAR(255)` | Display name |\
+| `area_id` | `INT UNSIGNED` FK \uc0\u8594  `areas.area_id` | Used for area filtering |\
+| `address` | `TEXT` | Display address |\
+| `niche_type` | `VARCHAR(200)` | Explore category; kept distinct from vibe |\
+| `vibe` | `TEXT` | Short descriptive cafe text; kept distinct from category |\
+| `price_for_two` | `DECIMAL(10,2)` | Numeric amount, formatted for display |\
+| `weekday_hours` | `VARCHAR(255)` | Mon\'96Fri text in readable AM/PM format |\
+| `weekend_hours` | `VARCHAR(255)` | Sat\'96Sun text in readable AM/PM format |\
+| `hours_note` | `VARCHAR(255)` NULL | Optional exceptions or extra service windows |\
+| `contact_number` | `VARCHAR(40)` NULL | Text preserves `+` or leading zeroes |\
+| `maps_url` | `VARCHAR(500)` NULL | Optional; otherwise generate a directions link from the address |\
+| `more_info` | `TEXT` NULL | Extra cafe-specific note |\
+| `status` | `VARCHAR(20)` | `draft`, `published`, or `archived`; CMS controls visibility |\
+| `created_at` | `DATETIME` | Creation time |\
+| `updated_at` | `DATETIME` | Last edit time |\
+\
+## 3\'964. `cuisines` and `cafe_cuisines`\
+\
+Cuisine is multi-valued in the current CSV and can be used in Explore filters, so keep it separate rather than comma-joining values in the cafe row.\
+\
+- `cuisines`: `cuisine_id INT UNSIGNED` PK, `name VARCHAR(120)` UNIQUE.\
+- `cafe_cuisines`: `cafe_id`, `cuisine_id`, with a composite primary key and foreign keys to `cafes` and `cuisines`.\
+\
+## 5\'966. `amenities` and `cafe_amenities`\
+\
+This supports both the existing checkboxes and custom CMS amenities.\
+\
+- `amenities`: `amenity_id INT UNSIGNED` PK, `name VARCHAR(100)` UNIQUE.\
+- `cafe_amenities`: `cafe_id`, `amenity_id`, `is_available TINYINT(1) NOT NULL`, composite primary key across `cafe_id` and `amenity_id`.\
+\
+In the CMS, show available amenities as Yes/No controls. \'93Add custom amenity\'94 adds a reusable row to `amenities`, then editors can set Yes or No for each cafe. Example names: Wifi, Indoor seating, Outdoor seating, Work friendly, Lunch, Dinner. This keeps amenity values in the database without requiring a new `cafes` column whenever an amenity is added.\
+\
+## 7. `cafe_images`\
+\
+One row per photo, so galleries can be reordered and edited in the CMS.\
+\
+| Column | Type | Notes |\
+|---|---|---|\
+| `image_id` | `INT UNSIGNED` PK, auto-increment | Image record |\
+| `cafe_id` | `INT UNSIGNED` FK | Owning cafe |\
+| `image_path` | `VARCHAR(500)` | Project-relative path, not image bytes |\
+| `alt_text` | `VARCHAR(255)` NULL | Accessible description |\
+| `sort_order` | `SMALLINT UNSIGNED` | Gallery order |\
+| `is_cover` | `TINYINT(1)` | Marks the cover image |\
+\
+Only assign a photo to a cafe when it really belongs to that cafe; a randomly chosen catalog image should not be stored as its photo.\
+\
+## 8. `users` \'97 simple account login\
+\
+| Column | Type | Notes |\
+|---|---|---|\
+| `user_id` | `INT UNSIGNED` PK, auto-increment | Account ID |\
+| `username` | `VARCHAR(50)` UNIQUE | Required, unique login/display name |\
+| `phone_number` | `CHAR(10)` UNIQUE | Store the 10 digits as text, without country code |\
+| `password_hash` | `VARCHAR(255)` | Store a PHP-generated password hash, never the plain password |\
+| `role` | `VARCHAR(20)` | Defaults to `user`; set `admin` only for CMS accounts |\
+| `created_at` | `DATETIME` | Account creation time |\
+\
+The PHP form should validate exactly 10 digits and check username/phone uniqueness. Use PHP `password_hash()` when saving and `password_verify()` when logging in. Do not make an account admin through the public signup form.\
+\
+## 9. `favorites`\
+\
+- `user_id` FK \uc0\u8594  `users.user_id`\
+- `cafe_id` FK \uc0\u8594  `cafes.cafe_id`\
+- `created_at DATETIME`\
+- Composite primary key: (`user_id`, `cafe_id`)\
+\
+This stores the saved cafes already supported by the UI.\
+\
+## 10. `reviews` \'97 separate from cafe data\
+\
+- `review_id INT UNSIGNED` PK, auto-increment\
+- `cafe_id` FK \uc0\u8594  `cafes.cafe_id`\
+- `user_id` FK \uc0\u8594  `users.user_id`\
+- `review_text TEXT`\
+- `created_at DATETIME`\
+\
+No rating column unless you decide to add star ratings to the UI. The current demo/sample reviews should not be imported as real reviews.\
+\
+## 11\'9612. `homepage_sections` and `homepage_featured_cafes`\
+\
+These let the CMS edit homepage content without duplicating cafe records.\
+\
+- `homepage_sections`: `section_id`, `section_key` UNIQUE, `title`, `body`, `media_path`, `link_label`, `link_url`, `sort_order`, `is_published`.\
+- `homepage_featured_cafes`: `cafe_id` FK, `position`; composite primary key (`cafe_id`, `position`) or use `cafe_id` as PK with `position` UNIQUE.\
+\
+The CMS can edit hero/poster wording and choose/order featured cafe cards. The cafe\'92s name, price, image, and other details still come from its normal cafe record and related tables.\
+\
+**In short:** one `cafes` table for `niche_type` and `vibe` as separate fields, lookup/link tables for cuisines and amenities, a gallery table for images, and independent tables for users, favorites, reviews, and homepage content. The database should become the CMS source of truth when database/CMS implementation starts.}

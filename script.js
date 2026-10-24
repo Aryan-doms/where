@@ -1,6 +1,4 @@
 document.addEventListener("where:layout-ready", () => {
-const nicheStyles = ["coffee", "bistro", "dessert", "healthy", "travel", "work", "play", "garden", "rooftop"];
-const excludedNiche = "Artisanal Sourdough Pizzeria & European Bistro Cafe";
 const nicheTrack = document.querySelector("#niche-track");
 const nicheSlider = document.querySelector("#niche-slider");
 const featuredGrid = document.querySelector("#featured-grid");
@@ -22,17 +20,24 @@ function escapeHtml(value) {
   })[character]);
 }
 
+function nicheSlug(name) {
+  return String(name || "").toLowerCase().trim().replace(/[^\w\d]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 function renderNicheCards() {
-  nicheTrack.innerHTML = cafeTypes.filter((type) => type.name !== excludedNiche).map((type, index) => {
-    const typeCafe = cafes.find((cafe) => cafe.niche === type.name && cafe.cover_image);
+  nicheTrack.innerHTML = cafeTypes.map((type) => {
+    const typeCafe = cafes.find((cafe) => (cafe.niche === type.name || cafe.niche_type === type.name) && cafe.cover_image);
+    const slug = nicheSlug(type.name);
+    const countText = `${type.count} ${type.count === 1 ? "spot" : "spots"}`;
+    const exploreUrl = `explore.html?niche=${encodeURIComponent(type.name)}`;
     return `
-    <button class="niche-card niche-card--${nicheStyles[index % nicheStyles.length]}" type="button" data-type="${escapeHtml(type.name)}" aria-label="Show cafes in ${escapeHtml(type.name)}">
+    <a class="niche-card niche-card--${slug}" href="${exploreUrl}" aria-label="Explore ${escapeHtml(type.name)} spots">
       ${typeCafe ? `<img class="niche-card__image" src="${escapeHtml(typeCafe.cover_image)}" alt="" loading="lazy">` : ""}
       <span class="niche-card__content">
-        <span class="niche-card__count">${type.count} ${type.count === 1 ? "cafe" : "cafes"}</span>
+        <span class="niche-card__count">${countText}</span>
         <span class="niche-card__title">${escapeHtml(type.name)}</span>
       </span>
-    </button>`;
+    </a>`;
   }).join("");
 }
 
@@ -41,8 +46,10 @@ function renderFeaturedCafes() {
     .map((id) => cafes.find((cafe) => cafe.id === id))
     .filter(Boolean)
     .slice(0, 6);
-  featuredGrid.innerHTML = featured.map((cafe) => `
-    <a class="featured-card" href="cafe.html?id=${encodeURIComponent(cafe.id)}" aria-label="View details for ${escapeHtml(cafe.name)}">
+  featuredGrid.innerHTML = featured.map((cafe) => {
+    const cafeUrl = cafe.url_path ? `/${cafe.url_path}` : `/surat/${encodeURIComponent(cafe.area_slug || 'all')}/${encodeURIComponent(cafe.slug || cafe.id)}`;
+    return `
+    <a class="featured-card" href="${cafeUrl}" aria-label="View details for ${escapeHtml(cafe.name)}">
       ${cafe.cover_image ? `
         <div class="featured-card__media">
           <img class="featured-card__image featured-card__image--primary" src="${escapeHtml(cafe.cover_image)}" alt="" loading="lazy">
@@ -54,33 +61,73 @@ function renderFeaturedCafes() {
           <span>${escapeHtml(cafe.area)}</span>
           <h3>${escapeHtml(cafe.name)}</h3>
         </div>`}
-    </a>`).join("");
+    </a>`;
+  }).join("");
 }
 
 function renderAreaDirectory() {
-  areaList.innerHTML = areas.map((area, areaIndex) => `
-    <button class="area-row" type="button" data-area-index="${areaIndex}">
-      <span class="area-row__name">${escapeHtml(area.name)}</span>
-    </button>
-  `).join("");
+  areaList.innerHTML = areas.map((area, areaIndex) => {
+    return `
+      <button class="area-row ${areaIndex === 0 ? "is-active" : ""}" type="button" data-area-index="${areaIndex}" data-area-slug="${escapeHtml(area.slug || area.name)}" aria-label="Explore spots in ${escapeHtml(area.name)}">
+        <span class="area-row__name">${escapeHtml(area.name)}</span>
+      </button>
+    `;
+  }).join("");
 
   const updateAreaImages = (areaIndex) => {
-    const areaName = areas[areaIndex]?.name;
-    const images = cafes
-      .filter((cafe) => cafe.area === areaName)
-      .flatMap((cafe) => cafe.images.map((image) => image.src || image.image_url))
-      .filter(Boolean)
-      .slice(0, 3);
-    areaGallery.innerHTML = images.map((image, imageIndex) => `
-      <img class="area-gallery__image area-gallery__image--${imageIndex + 1}" src="${escapeHtml(image)}" alt="" loading="lazy">
+    const area = areas[areaIndex];
+    if (!area) return;
+
+    // Highlight active row
+    areaList.querySelectorAll(".area-row").forEach((r, idx) => {
+      r.classList.toggle("is-active", idx === areaIndex);
+    });
+
+    const areaCafes = cafes.filter((cafe) => cafe.area === area.name || cafe.area_slug === area.slug);
+
+    // Collect all available photos from cafes in this area
+    const areaPhotos = areaCafes
+      .flatMap((cafe) => (cafe.images || []).map((image) => image.src || image.image_url))
+      .filter(Boolean);
+
+    let chosenPhotos = [];
+    if (area.images && Array.isArray(area.images) && area.images.length > 0) {
+      chosenPhotos = [...area.images].filter(Boolean).slice(0, 3);
+    }
+
+    if (chosenPhotos.length < 3 && areaPhotos.length > 0) {
+      const rest = areaPhotos.filter((p) => !chosenPhotos.includes(p));
+      const shuffled = [...rest].sort(() => 0.5 - Math.random());
+      while (chosenPhotos.length < 3 && shuffled.length) {
+        chosenPhotos.push(shuffled.pop());
+      }
+    }
+
+    if (chosenPhotos.length < 3) {
+      // Area has no photos yet: shuffle random photos from cafes across Surat
+      const fallbackPhotos = cafes.flatMap((c) => c.images?.map((i) => i.src || i.image_url) || []).filter(Boolean);
+      const shuffledFallback = [...fallbackPhotos].sort(() => 0.5 - Math.random());
+      while (chosenPhotos.length < 3 && shuffledFallback.length) {
+        const next = shuffledFallback.pop();
+        if (!chosenPhotos.includes(next)) chosenPhotos.push(next);
+      }
+    }
+
+    areaGallery.innerHTML = chosenPhotos.map((image, imageIndex) => `
+      <img class="area-gallery__image area-gallery__image--${imageIndex + 1}" src="${escapeHtml(image)}" alt="Photo from ${escapeHtml(area.name)}" loading="lazy">
     `).join("");
   };
+
   if (areas.length) updateAreaImages(0);
 
   areaList.querySelectorAll(".area-row").forEach((row) => {
     const areaIndex = Number(row.dataset.areaIndex);
     row.addEventListener("mouseenter", () => updateAreaImages(areaIndex));
     row.addEventListener("focus", () => updateAreaImages(areaIndex));
+    row.addEventListener("click", () => {
+      const area = areas[areaIndex];
+      window.location.href = `explore.html?area=${encodeURIComponent(area.slug || area.name)}`;
+    });
   });
 }
 
@@ -168,6 +215,10 @@ async function loadHomepage() {
     setupSlider();
     renderFeaturedCafes();
     renderAreaDirectory();
+    if (window.location.hash) {
+      const target = document.querySelector(window.location.hash);
+      if (target) target.scrollIntoView({ behavior: "auto" });
+    }
   } catch (error) {
     console.error("Homepage cafe data could not be loaded.", error);
   }

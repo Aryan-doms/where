@@ -57,6 +57,13 @@ function priceAmount(string $value): float
     return (float) $value;
 }
 
+function whereSlugify(string $text): string
+{
+    $text = mb_strtolower(trim($text), 'UTF-8');
+    $text = preg_replace('/[^\p{L}\p{N}]+/u', '-', $text);
+    return trim($text, '-') ?: 'spot';
+}
+
 try {
     $pdo = whereDb();
     $existingCount = (int) $pdo->query('SELECT COUNT(*) FROM cafes')->fetchColumn();
@@ -80,8 +87,8 @@ try {
     $pdo->beginTransaction();
 
     $upsertArea = $pdo->prepare(
-        'INSERT INTO areas (standardized_category, display_name) VALUES (?, ?)
-         ON DUPLICATE KEY UPDATE display_name = VALUES(display_name)'
+        'INSERT INTO areas (standardized_category, display_name, slug) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), slug = VALUES(slug)'
     );
     $findArea = $pdo->prepare('SELECT area_id FROM areas WHERE standardized_category = ?');
     $areaIds = [];
@@ -89,10 +96,11 @@ try {
         $sourceId = requiredCsvValue($area, 'area_id', 'areas');
         $category = requiredCsvValue($area, 'standardized_category', 'areas');
         $displayName = requiredCsvValue($area, 'display_name', 'areas');
+        $areaSlug = whereSlugify($displayName);
         if ($category === '' || $displayName === '') {
             throw new RuntimeException("Area {$sourceId} is missing its category or display name.");
         }
-        $upsertArea->execute([$category, $displayName]);
+        $upsertArea->execute([$category, $displayName, $areaSlug]);
         $findArea->execute([$category]);
         $areaIds[$sourceId] = (int) $findArea->fetchColumn();
     }
@@ -163,11 +171,11 @@ try {
 
     $insertCafe = $pdo->prepare(
         'INSERT INTO cafes
-          (id, source_row_number, name, area_id, location, cuisine_source, niche_type, timing,
+          (id, source_row_number, name, slug, area_id, location, cuisine_source, niche_type, timing,
            weekday_hours, weekend_hours, hours_note, contact_details_number, price_range,
            price_for_two, vibe_ambiance, more_info, maps_url, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE name = VALUES(name), area_id = VALUES(area_id),
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE name = VALUES(name), slug = VALUES(slug), area_id = VALUES(area_id),
            location = VALUES(location), cuisine_source = VALUES(cuisine_source),
            niche_type = VALUES(niche_type), timing = VALUES(timing),
            weekday_hours = VALUES(weekday_hours), weekend_hours = VALUES(weekend_hours),
@@ -216,6 +224,7 @@ try {
             $cafeId,
             (int) $sourceId,
             $name,
+            whereSlugify($name),
             $areaIds[$areaSourceId],
             requiredCsvValue($cafe, 'address', 'cafes'),
             implode(', ', $cuisineNames),

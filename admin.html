@@ -3,126 +3,648 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0f172a">
   <meta name="robots" content="noindex, nofollow">
-  <title>WHERE? CMS</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>WHERE? Studio — Admin CMS</title>
+  <link rel="stylesheet" href="admin.css">
   <script src="admin.js" defer></script>
 </head>
-<body class="cms-page">
-  <main class="cms-shell">
-    <header class="cms-header">
-      <a class="brand-image brand-image--header" href="index.html" aria-label="WHERE? home">
-        <img src="where.png" alt="WHERE?">
-      </a>
-      <div>
-        <p class="eyebrow">CONTENT MANAGEMENT</p>
-        <h1>Admin.</h1>
+<body class="admin-body">
+
+  <!-- ====================================================================
+       1. AUTH / LOGIN VIEW (WHEN NOT LOGGED IN)
+       ==================================================================== -->
+  <section class="admin-login-screen" id="view-login" hidden>
+    <div class="login-card">
+      <div class="login-header">
+        <img src="where.png" alt="WHERE?" class="login-logo">
+        <h2>WHERE? Studio</h2>
+        <p>Sign in to manage cafes, discovery URLs, and media.</p>
       </div>
-      <button class="cms-logout" id="cms-logout" type="button" hidden>Log out</button>
-    </header>
-
-    <section class="cms-login" id="cms-login" hidden>
-      <h2>Log in to the CMS.</h2>
-      <p>Use an administrator account created from the project CLI.</p>
-      <form id="cms-login-form" class="cms-form cms-login-form">
-        <label>Username<input name="username" autocomplete="username" required></label>
-        <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
-        <button class="auth-submit" type="submit">Log in</button>
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Username</label>
+          <input type="text" id="login-username" name="username" class="form-input" autocomplete="username" placeholder="admin" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" class="form-input" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-login-submit">Sign in to Studio</button>
       </form>
-    </section>
+    </div>
+  </section>
 
-    <section class="cms-workspace" id="cms-workspace" hidden>
-      <nav class="cms-tabs" aria-label="CMS sections">
-        <button class="cms-tab is-active" type="button" data-cms-tab="cafes">Cafes</button>
-        <button class="cms-tab" type="button" data-cms-tab="homepage">Homepage</button>
+  <!-- ====================================================================
+       2. MAIN APPLICATION SHELL
+       ==================================================================== -->
+  <div class="admin-layout" id="view-app" hidden>
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <img src="where.png" alt="WHERE?" class="sidebar-brand-logo">
+          <span class="sidebar-brand-badge">Studio</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main Navigation">
+        <span class="nav-section-label">Management</span>
+        <button type="button" class="nav-item is-active" id="nav-btn-cafes" data-view="cafes">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+          </span>
+          <span>All Cafes</span>
+        </button>
+        <button type="button" class="nav-item" id="nav-btn-homepage" data-view="homepage">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </span>
+          <span>Homepage Curation</span>
+        </button>
+        <button type="button" class="nav-item" id="nav-btn-media" data-view="media">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </span>
+          <span>Media Library</span>
+        </button>
+        <button type="button" class="nav-item" id="nav-btn-areas" data-view="areas">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </span>
+          <span>Areas Manager</span>
+        </button>
+
+        <span class="nav-section-label">Live Discovery</span>
+        <a href="index.html" target="_blank" rel="noopener" class="nav-item">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </span>
+          <span>View Homepage ↗</span>
+        </a>
+        <a href="explore.html" target="_blank" rel="noopener" class="nav-item">
+          <span class="nav-item-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          </span>
+          <span>Explore All Spots ↗</span>
+        </a>
       </nav>
 
-      <section class="cms-panel is-active" id="cms-cafes">
-        <div class="cms-cafe-layout">
-          <aside class="cms-cafe-sidebar">
-            <div class="cms-sidebar-heading">
-              <h2>Cafe list</h2>
-              <button class="cms-secondary-button" id="new-cafe" type="button">Add cafe</button>
-            </div>
-            <label class="visually-hidden" for="cms-cafe-search">Search cafes</label>
-            <input id="cms-cafe-search" type="search" placeholder="Search cafes">
-            <div class="cms-cafe-list" id="cms-cafe-list"></div>
-          </aside>
-
-          <div class="cms-edit-area">
-            <form id="cms-cafe-form" class="cms-form">
-              <div class="cms-form-heading">
-                <div>
-                  <p class="eyebrow">CAFE DETAILS</p>
-                  <h2 id="cms-cafe-heading">Add a cafe.</h2>
-                </div>
-                <label class="cms-status">Status
-                  <select name="status">
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </label>
-              </div>
-              <input name="id" type="hidden">
-              <div class="cms-fields-grid">
-                <label>Name<input name="name" maxlength="255" required></label>
-                <label>Area<select name="area_id" id="cms-area" required></select></label>
-                <label>Category / niche<input name="niche_type" maxlength="200" required></label>
-                <label>Cuisine names <span>comma separated</span><input name="cuisines"></label>
-                <label>Price for two<input name="price_for_two" type="number" min="0" step="0.01"></label>
-                <label>Display price text<input name="price_range"></label>
-                <label>Contact number<input name="contact" type="tel"></label>
-                <label>Maps directions URL<input name="maps_url" type="url"></label>
-                <label class="cms-field-wide">Address<textarea name="address" rows="2" required></textarea></label>
-                <label class="cms-field-wide">Vibe / description<textarea name="vibe" rows="3"></textarea></label>
-                <label>Weekday hours <span>Mon–Fri, AM/PM</span><textarea name="weekday_hours" rows="2"></textarea></label>
-                <label>Weekend hours <span>Sat–Sun, AM/PM</span><textarea name="weekend_hours" rows="2"></textarea></label>
-                <label class="cms-field-wide">Hours notes / exceptions<textarea name="hours_note" rows="2"></textarea></label>
-                <label class="cms-field-wide">More to know<textarea name="more_info" rows="2"></textarea></label>
-                <label class="cms-field-wide">Original schedule text<textarea name="timing" rows="2"></textarea></label>
-              </div>
-
-              <section class="cms-subsection">
-                <div class="cms-sidebar-heading">
-                  <div><p class="eyebrow">FEATURES</p><h3>Amenities</h3></div>
-                  <button class="cms-secondary-button" id="add-amenity" type="button">Add amenity</button>
-                </div>
-                <div class="cms-amenities" id="cms-amenities"></div>
-              </section>
-
-              <section class="cms-subsection">
-                <div><p class="eyebrow">PHOTOS</p><h3>Cafe gallery</h3></div>
-                <p class="cms-help">Choose up to 24 catalog images. Gallery order follows the catalog list; the first selected image is the cover.</p>
-                <div class="cms-gallery-picker" id="cms-gallery-picker"></div>
-              </section>
-
-              <div class="cms-actions">
-                <button class="auth-submit" type="submit">Save cafe</button>
-                <button class="cms-danger-button" id="archive-cafe" type="button" hidden>Archive cafe</button>
-              </div>
-            </form>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="sidebar-user-avatar">A</div>
+          <div class="user-details">
+            <span class="user-name" id="sidebar-user-name">Admin</span>
+            <span class="user-role">Administrator</span>
           </div>
         </div>
-      </section>
+        <button type="button" class="btn-sidebar-logout" id="btn-logout" title="Log out of CMS" aria-label="Log out">
+          ✕
+        </button>
+      </div>
+    </aside>
 
-      <section class="cms-panel" id="cms-homepage">
-        <form class="cms-form cms-home-form" id="cms-home-form">
-          <p class="eyebrow">HOME PAGE COPY</p>
-          <h2>Sections.</h2>
-          <div id="cms-home-sections"></div>
-          <div class="cms-subsection">
-            <p class="eyebrow">FEATURED PLACES</p>
-            <h3>Choose and order the home page cafes.</h3>
-            <div class="cms-featured-list" id="cms-featured-list"></div>
+    <!-- MAIN STAGE -->
+    <main class="admin-main">
+      
+      <!-- Top Command Bar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title" id="breadcrumb-current">Cafes Directory</h1>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="btn btn-primary" id="btn-save-homepage" hidden>Save Homepage</button>
+        </div>
+      </header>
+
+      <!-- View Stage -->
+      <div class="admin-stage">
+
+        <!-- ==============================================================
+             STAGE VIEW 1: CAFES DIRECTORY (TABLE & FILTERS)
+             ============================================================== -->
+        <section class="admin-view is-active" id="stage-cafes">
+          <div class="table-card">
+            <div class="table-toolbar">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" aria-hidden="true">⌕</span>
+                <input type="search" id="input-search-cafes" placeholder="Search by name, cuisine, area, or slug..." aria-label="Search cafes">
+              </div>
+
+              <div class="toolbar-filters">
+                <select id="select-filter-area" class="filter-select" aria-label="Filter by area">
+                  <option value="">All Areas</option>
+                </select>
+
+                <div class="status-tabs" role="radiogroup" aria-label="Filter by status">
+                  <button type="button" class="status-tab-btn is-active" data-status="">All (<span id="count-status-all">0</span>)</button>
+                  <button type="button" class="status-tab-btn" data-status="published">Published (<span id="count-status-published">0</span>)</button>
+                  <button type="button" class="status-tab-btn" data-status="draft">Drafts (<span id="count-status-draft">0</span>)</button>
+                  <button type="button" class="status-tab-btn" data-status="archived">Archived (<span id="count-status-archived">0</span>)</button>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btn-create-spot-main">+ Add Spot</button>
+                <input type="file" id="input-table-cafe-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+              </div>
+            </div>
+
+            <!-- Modern Semantic Data Table -->
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Cafes Data Table">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Spot Details</th>
+                    <th>Area</th>
+                    <th>Cuisines</th>
+                    <th>Price for Two</th>
+                    <th>Photos</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body-cafes">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-footer">
+              <span id="table-pagination-info">Showing 0 of 0 spots</span>
+              <div class="pagination-controls">
+                <button type="button" class="btn-pagination" id="btn-page-prev" disabled>← Previous</button>
+                <button type="button" class="btn-pagination" id="btn-page-next" disabled>Next →</button>
+              </div>
+            </div>
           </div>
-          <button class="auth-submit" type="submit">Save homepage</button>
-        </form>
-      </section>
-    </section>
+        </section>
 
-    <p class="cms-message" id="cms-message" role="status" aria-live="polite"></p>
-  </main>
+        <!-- ==============================================================
+             STAGE VIEW 2: CAFE STUDIO EDITOR
+             ============================================================== -->
+        <section class="admin-view" id="stage-cafe-editor">
+          <div class="editor-view-container">
+            
+            <!-- Sticky Header Bar -->
+            <div class="editor-header-bar">
+              <div class="editor-header-left">
+                <button type="button" class="btn-back-link" id="btn-editor-back">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  <span>Spots</span>
+                </button>
+                <div class="editor-title-block">
+                  <h2 id="editor-cafe-heading">Editing Spot</h2>
+                  <a href="#" target="_blank" rel="noopener" id="editor-preview-link" class="editor-live-chip" title="View live public spot">
+                    <span class="editor-live-dot" aria-hidden="true"></span>
+                    <span id="editor-live-path">/surat/...</span>
+                    <svg class="editor-live-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                  </a>
+                </div>
+              </div>
+
+              <div class="editor-header-actions">
+                <div class="editor-status-wrap">
+                  <span class="editor-status-dot" id="editor-status-dot" data-status="published"></span>
+                  <select id="editor-status-select" class="editor-status-select" aria-label="Publication Status">
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-secondary btn-archive" id="btn-editor-archive" hidden>Archive</button>
+                <button type="button" class="btn btn-primary" id="btn-editor-save">Save Changes</button>
+              </div>
+            </div>
+
+            <!-- Form Workspace Grid -->
+            <form id="form-cafe-editor" class="editor-form-grid">
+              <input type="hidden" name="id" id="editor-field-id">
+
+              <!-- Left Main Column (Details) -->
+              <div class="editor-main-col">
+                
+                <!-- Card 1: Identity & Slug -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Basic Identity & URL Routing</h3>
+                      <p>Defines how the spot appears in search, directory, and URL paths.</p>
+                    </div>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-name">Spot Name</label>
+                      <input type="text" id="field-name" name="name" class="form-input" placeholder="e.g. BAKES & BREW" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-slug">
+                        URL Slug
+                        <span class="form-label-hint">Live URL path key</span>
+                      </label>
+                      <div class="slug-input-wrapper">
+                        <input type="text" id="field-slug" name="slug" class="form-input" placeholder="bakes-brew" required>
+                        <button type="button" class="btn-input-icon" id="btn-sync-slug" title="Auto-generate slug from name" aria-label="Auto-generate slug">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-area">Surat Area</label>
+                      <select id="field-area" name="area_id" class="form-select" required>
+                        <option value="">Select Area</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-niche">Category / Niche Type</label>
+                      <input type="text" id="field-niche" name="niche_type" class="form-input" list="niche-suggestions-list" placeholder="e.g. coffee nerds, hot girl place..." required>
+                      <datalist id="niche-suggestions-list">
+                        <option value="coffee nerds">
+                        <option value="hot girl place">
+                        <option value="matcha heads">
+                        <option value="first light">
+                        <option value="after hours">
+                        <option value="boujee">
+                        <option value="whimsical">
+                        <option value="SRT OG">
+                        <option value="open air">
+                      </datalist>
+                      <div class="tag-suggestions" style="margin-top: 6px;">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: 4px;">Quick Pick:</span>
+                        <button type="button" class="btn-suggest" data-niche-val="coffee nerds">coffee nerds</button>
+                        <button type="button" class="btn-suggest" data-niche-val="hot girl place">hot girl place</button>
+                        <button type="button" class="btn-suggest" data-niche-val="matcha heads">matcha heads</button>
+                        <button type="button" class="btn-suggest" data-niche-val="first light">first light</button>
+                        <button type="button" class="btn-suggest" data-niche-val="after hours">after hours</button>
+                        <button type="button" class="btn-suggest" data-niche-val="boujee">boujee</button>
+                        <button type="button" class="btn-suggest" data-niche-val="whimsical">whimsical</button>
+                        <button type="button" class="btn-suggest" data-niche-val="SRT OG">SRT OG</button>
+                        <button type="button" class="btn-suggest" data-niche-val="open air">open air</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Menu, Pricing & Cuisines -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Pricing & Cuisines Served</h3>
+                      <p>Used in search filters and price breakdowns.</p>
+                    </div>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label" for="field-price-num">Price for Two (₹ numeric)</label>
+                      <input type="number" id="field-price-num" name="price_for_two" class="form-input" placeholder="500" min="0" step="1">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-price-text">Display Price Text</label>
+                      <input type="text" id="field-price-text" name="price_range" class="form-input" placeholder="₹500 for two people (approx.)">
+                    </div>
+
+                    <div class="form-group col-full">
+                      <label class="form-label">
+                        Cuisine Tags
+                        <span class="form-label-hint">Press Enter or click suggestions to add</span>
+                      </label>
+                      <div class="tag-input-box" id="cuisines-tag-box">
+                        <div id="cuisines-tag-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        <input type="text" id="input-new-cuisine" placeholder="+ Add cuisine...">
+                      </div>
+                      <div class="tag-suggestions" id="cuisines-suggestions">
+                        <span>Popular:</span>
+                        <button type="button" class="btn-suggest">Coffee</button>
+                        <button type="button" class="btn-suggest">Bakery</button>
+                        <button type="button" class="btn-suggest">Italian</button>
+                        <button type="button" class="btn-suggest">Desserts</button>
+                        <button type="button" class="btn-suggest">Fast Food</button>
+                        <button type="button" class="btn-suggest">Pizza</button>
+                        <button type="button" class="btn-suggest">Continental</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Location & Contact -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Location & Contact Details</h3>
+                      <p>Physical address and navigation coordinates.</p>
+                    </div>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-address">Full Address</label>
+                      <textarea id="field-address" name="address" class="form-textarea" rows="2" placeholder="Shop / Building, Road, Area, Surat" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-contact">Contact Phone Number</label>
+                      <input type="tel" id="field-contact" name="contact" class="form-input" placeholder="+91 98258 80680">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-maps">Google Maps Directions URL</label>
+                      <input type="url" id="field-maps" name="maps_url" class="form-input" placeholder="https://maps.google.com/...">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Schedule & Timings -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Operating Hours</h3>
+                      <p>Weekday, weekend, and exception schedules.</p>
+                    </div>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label" for="field-weekday-hours">Weekday Hours (Mon–Fri)</label>
+                      <input type="text" id="field-weekday-hours" name="weekday_hours" class="form-input" placeholder="e.g. 11am – 11pm">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="field-weekend-hours">Weekend Hours (Sat–Sun)</label>
+                      <input type="text" id="field-weekend-hours" name="weekend_hours" class="form-input" placeholder="e.g. 11am – 12midnight">
+                    </div>
+
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-hours-note">Exceptions & Notes</label>
+                      <input type="text" id="field-hours-note" name="hours_note" class="form-input" placeholder="e.g. Wed opens early at 9:30am">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 5: Story & Atmosphere -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Atmosphere & Narrative</h3>
+                      <p>Vibe descriptions shown on the detail page.</p>
+                    </div>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-vibe">Vibe / Ambiance Description</label>
+                      <textarea id="field-vibe" name="vibe" class="form-textarea" rows="3" placeholder="Minimalist specialty coffee-bar aesthetic, ambient lounge music..."></textarea>
+                    </div>
+
+                    <div class="form-group col-full">
+                      <label class="form-label" for="field-more-info">More to Know / Editorial Note</label>
+                      <textarea id="field-more-info" name="more_info" class="form-textarea" rows="2" placeholder="Any special seating info, pet friendly notes, etc."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 6: Amenities Checklist -->
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Features & Amenities</h3>
+                      <p>Toggle available conveniences for this cafe.</p>
+                    </div>
+                  </div>
+                  
+                  <div class="add-amenity-inline">
+                    <input type="text" id="input-new-amenity" class="form-input" placeholder="Custom amenity name...">
+                    <button type="button" class="btn btn-secondary" id="btn-add-amenity">+ Add Amenity</button>
+                  </div>
+
+                  <div class="amenities-grid" id="editor-amenities-grid">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Column (Media & Photo Gallery) -->
+              <div class="editor-side-col">
+                <div class="editor-card">
+                  <div class="editor-card-header">
+                    <div>
+                      <h3>Gallery Photos (<span id="editor-gallery-count">0</span>/24)</h3>
+                      <p>Select which images display in the gallery. Star an image to set as the cover.</p>
+                    </div>
+                  </div>
+
+                  <!-- Currently Attached Photos -->
+                  <div class="gallery-grid" id="editor-gallery-grid">
+                    <!-- Injected dynamically -->
+                  </div>
+
+                  <!-- Photo Action Buttons -->
+                  <div class="gallery-action-toolbar">
+                    <button type="button" class="btn btn-primary" id="btn-open-photo-picker">
+                      🖼️ Select Photos
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-upload-local-photo">
+                      📁 Upload Local Photo
+                    </button>
+                    <input type="file" id="input-cafe-local-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+                  </div>
+
+                  <!-- Quick Add Remote Photo URL -->
+                  <div class="gallery-add-bar">
+                    <input type="url" id="input-gallery-url" class="form-input" placeholder="Or paste image URL (https://...)">
+                    <button type="button" class="btn btn-secondary" id="btn-add-gallery-url">+ Add URL</button>
+                  </div>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             STAGE VIEW 3: HOMEPAGE CURATION
+             ============================================================== -->
+        <section class="admin-view" id="stage-homepage">
+          <div class="homepage-curation-layout">
+            <!-- 1. SPOTS WE LOVE. -->
+            <div class="editor-card" style="margin-bottom: 24px;">
+              <div class="editor-card-header">
+                <div>
+                  <h3>SPOTS WE LOVE.</h3>
+                </div>
+              </div>
+
+              <div class="hp-curation-toolbar">
+                <div class="toolbar-search hp-search-wrapper">
+                  <span class="toolbar-search-icon" aria-hidden="true">⌕</span>
+                  <input type="search" id="hp-search-spots" placeholder="Search cafe by name, area, or niche to add..." autocomplete="off">
+                  <div class="hp-search-dropdown" id="hp-search-dropdown" hidden></div>
+                </div>
+                <span class="hp-count-pill" id="hp-featured-count-pill">0 / 6 spots selected</span>
+              </div>
+
+              <div class="curated-spots-list" id="curated-spots-list">
+                <!-- Dynamically populated 6 slots -->
+              </div>
+            </div>
+
+            <!-- 2. AREA DISCOVERY -->
+            <div class="editor-card">
+              <div class="editor-card-header">
+                <div>
+                  <h3>AREA DISCOVERY</h3>
+                </div>
+              </div>
+
+              <div class="curated-areas-list" id="curated-areas-list">
+                <!-- Dynamically populated 11 area slots -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             STAGE VIEW 4: MEDIA LIBRARY
+             ============================================================== -->
+        <section class="admin-view" id="stage-media">
+          <div class="table-card">
+            <div class="table-toolbar" style="flex-wrap: wrap; gap: 14px;">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" aria-hidden="true">⌕</span>
+                <input type="search" id="input-search-media" placeholder="Filter media by restaurant name or URL...">
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
+                <span id="media-library-count-info" style="font-size: 0.8rem; color: var(--text-muted);">Showing 0 photos</span>
+                <input type="url" id="input-standalone-media-url" class="form-input" placeholder="https://media-assets.swiggy.com/..." style="width: 260px;">
+                <input type="text" id="input-standalone-media-name" class="form-input" placeholder="Place name" style="width: 130px;">
+                <button type="button" class="btn btn-primary" id="btn-standalone-add-media">+ Add Photo</button>
+              </div>
+            </div>
+            <div style="padding: 20px;">
+              <div class="media-gallery-grid" id="media-gallery-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             STAGE VIEW 5: AREAS MANAGER
+             ============================================================== -->
+        <section class="admin-view" id="stage-areas">
+          <div class="table-card">
+            <div class="table-toolbar">
+              <div class="toolbar-search">
+                <span class="toolbar-search-icon" aria-hidden="true">⌕</span>
+                <input type="search" id="input-search-areas" placeholder="Search areas by name or slug...">
+              </div>
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <span id="areas-manager-count-info" style="font-size: 0.8rem; color: var(--text-muted);">11 Areas Configured</span>
+                <button type="button" class="btn btn-primary" id="btn-create-area-main">+ Add Area</button>
+              </div>
+            </div>
+
+            <!-- Areas Data Table -->
+            <div class="table-responsive">
+              <table class="admin-table" id="table-areas">
+                <thead>
+                  <tr>
+                    <th>Area Name</th>
+                    <th>URL Slug</th>
+                    <th>Discovery Path</th>
+                    <th>Spots Count</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body-areas">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ====================================================================
+         GLOBAL MODAL DIALOGS (TOP-LEVEL TO AVOID CONTAINER DISPLAY:NONE)
+         ==================================================================== -->
+
+    <!-- Add / Edit Area Modal Dialog -->
+    <dialog class="admin-modal" id="dialog-area-editor">
+      <form id="form-area-editor" class="modal-form" method="dialog">
+        <div class="modal-header">
+          <h3 id="area-modal-title">Edit Area</h3>
+          <button type="button" class="btn-modal-close" id="btn-close-area-modal" aria-label="Close dialog">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="area-field-id" name="area_id">
+          <div class="form-group">
+            <label class="form-label" for="area-field-name">Area Name</label>
+            <input type="text" id="area-field-name" name="display_name" class="form-input" placeholder="e.g. Vesu (VIP Road & Vesu)" required>
+          </div>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" for="area-field-slug" style="margin: 0;">URL Slug</label>
+              <button type="button" class="btn-text-action" id="btn-sync-area-slug">Auto-generate from name</button>
+            </div>
+            <input type="text" id="area-field-slug" name="slug" class="form-input" placeholder="e.g. vesu" required>
+            <span class="form-hint" id="area-slug-preview">Live discovery URL: /surat/<span>vesu</span></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-area-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-area-submit">Save Area</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Select Photos Modal Dialog (Local & Catalog URLs) -->
+    <dialog class="admin-modal admin-modal-wide" id="dialog-photo-picker">
+      <div class="modal-form">
+        <div class="modal-header">
+          <div>
+            <h3 id="photo-picker-title">Select Photos</h3>
+            <p class="modal-subtitle">Browse local images & verified URLs or upload new photos</p>
+          </div>
+          <button type="button" class="btn-modal-close" id="btn-close-photo-picker" aria-label="Close dialog">×</button>
+        </div>
+
+        <div class="modal-picker-toolbar">
+          <div class="picker-search-box">
+            <span class="picker-search-icon" aria-hidden="true">⌕</span>
+            <input type="search" id="input-modal-photo-search" class="form-input" placeholder="Search by spot name or filename...">
+          </div>
+          <div class="picker-filter-tabs" role="tablist">
+            <button type="button" class="picker-tab-btn is-active" data-filter="all">All (<span id="count-picker-all">0</span>)</button>
+            <button type="button" class="picker-tab-btn" data-filter="local">📁 Local (<span id="count-picker-local">0</span>)</button>
+            <button type="button" class="picker-tab-btn" data-filter="url">🌐 URLs (<span id="count-picker-url">0</span>)</button>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-modal-upload-photo">📁 Upload Photo</button>
+          <input type="file" id="input-modal-local-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        </div>
+
+        <div class="modal-body modal-picker-body">
+          <div class="modal-photos-grid" id="modal-photos-grid">
+            <!-- Injected dynamically via JS -->
+          </div>
+        </div>
+
+        <div class="modal-footer picker-footer">
+          <span class="picker-selected-summary" id="modal-selected-summary">0 photos selected for this spot</span>
+          <button type="button" class="btn btn-primary" id="btn-done-photo-picker">Done</button>
+        </div>
+      </div>
+    </dialog>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Global Floating Toast Notification -->
+    <div class="toast-container" id="toast-container"></div>
+
+  </div>
+
 </body>
 </html>

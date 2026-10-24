@@ -26,7 +26,7 @@ document.addEventListener("where:layout-ready", async () => {
   }
 
   async function renderReviews(cafe) {
-    const result = await requestJson(`api/user.php?action=reviews&cafe_id=${encodeURIComponent(cafe.id)}`);
+    const result = await requestJson(`/api/user.php?action=reviews&cafe_id=${encodeURIComponent(cafe.id)}`);
     const reviews = result.reviews;
     const markup = reviews.length
       ? reviews.map(reviewMarkup).join("")
@@ -40,7 +40,7 @@ document.addEventListener("where:layout-ready", async () => {
     const user = window.WhereUser.current();
     document.getElementById("review-login-note").innerHTML = user
       ? `Posting as <strong>${escapeHtml(user.username)}</strong>`
-      : 'Log in to add a review. <a href="login.html">Log in</a>';
+      : 'Log in to add a review. <a href="/login.html">Log in</a>';
   }
 
   function setupReviews(cafe) {
@@ -52,7 +52,7 @@ document.addEventListener("where:layout-ready", async () => {
       event.preventDefault();
       const user = window.WhereUser.current();
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "/login.html";
         return;
       }
       const button = document.getElementById("add-review");
@@ -81,22 +81,54 @@ document.addEventListener("where:layout-ready", async () => {
     document.querySelectorAll(".cafe-detail-main > section").forEach((section) => {
       section.hidden = false;
     });
-    setText("breadcrumb-area", cafe.area.toUpperCase());
+    const breadcrumbArea = document.getElementById("breadcrumb-area");
+    if (breadcrumbArea) {
+      breadcrumbArea.innerHTML = `<a href="/surat/${encodeURIComponent(cafe.area_slug || '')}">${escapeHtml(cafe.area.toUpperCase())}</a>`;
+    }
     setText("breadcrumb-id", cafe.name.toUpperCase());
     setText("cafe-name", cafe.name);
     setText("cafe-cuisine-summary", cafe.niche);
+    setText("cafe-cuisines-list", cafe.cuisine || "");
     setText("cafe-price", (cafe.price || "").replace(/\s+for two people \(approx\.\)/i, ""));
+
+    const ratingBadge = document.getElementById("cafe-rating-badge");
+    const ratingDot = document.getElementById("cafe-rating-dot");
+    if (ratingBadge) {
+      if (cafe.rating) {
+        const numRating = Number(cafe.rating) || 0;
+        let tier = "low";
+        if (numRating >= 4.0) {
+          tier = "high";
+        } else if (numRating >= 3.5) {
+          tier = "good";
+        } else if (numRating >= 3.0) {
+          tier = "mid";
+        }
+        ratingBadge.className = `detail-hero__rating explore-card__rating--${tier}`;
+        ratingBadge.innerHTML = `<span aria-hidden="true">★</span> ${escapeHtml(cafe.rating)}`;
+        ratingBadge.hidden = false;
+        if (ratingDot) ratingDot.hidden = false;
+      } else {
+        ratingBadge.hidden = true;
+        if (ratingDot) ratingDot.hidden = true;
+      }
+    }
 
     const favoriteButton = document.getElementById("favorite-button");
     const updateFavoriteButton = () => {
       const saved = window.WhereUser.hasFavorite(cafe.id);
       favoriteButton.setAttribute("aria-pressed", String(saved));
-      favoriteButton.innerHTML = `${saved ? "♥" : "♡"} <span>${saved ? "Saved spot" : "Save spot"}</span>`;
+      favoriteButton.setAttribute("aria-label", saved ? `Remove ${cafe.name} from saved spots` : `Save ${cafe.name}`);
+      favoriteButton.innerHTML = `
+        <svg class="favorite-heart-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path>
+        </svg>
+      `;
     };
     updateFavoriteButton();
     favoriteButton.addEventListener("click", async () => {
       if (!window.WhereUser.current()) {
-        window.location.href = "login.html";
+        window.location.href = "/login.html";
         return;
       }
       favoriteButton.disabled = true;
@@ -120,7 +152,10 @@ document.addEventListener("where:layout-ready", async () => {
     );
 
     const directions = document.getElementById("map-directions");
-    directions.href = cafe.maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.address || cafe.location)}`;
+    const directionsUrl = cafe.maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.address || cafe.location)}`;
+    directions.href = directionsUrl;
+    const heroDirections = document.getElementById("hero-directions-button");
+    if (heroDirections) heroDirections.href = directionsUrl;
 
     const contact = document.getElementById("cafe-contact");
     const phone = (cafe.contact || "").split(/[,;/]/)[0].trim();
@@ -142,10 +177,13 @@ document.addEventListener("where:layout-ready", async () => {
     setText("related-area", `MORE IN ${cafe.area.toUpperCase()}`);
     const related = allCafes.filter((item) => item.area === cafe.area && item.id !== cafe.id).slice(0, 3);
     document.getElementById("related-cafes").innerHTML = related.length
-      ? related.map((item) => `
-        <a class="detail-related__link" href="cafe.html?id=${encodeURIComponent(item.id)}">
+      ? related.map((item) => {
+        const itemUrl = `/surat/${encodeURIComponent(item.area_slug || 'all')}/${encodeURIComponent(item.slug || item.id)}`;
+        return `
+        <a class="detail-related__link" href="${itemUrl}">
           <span>${escapeHtml(item.name)}</span>
-        </a>`).join("")
+        </a>`;
+      }).join("")
       : '<p class="detail-muted">No other cafes are listed for this area yet.</p>';
   }
 
@@ -158,7 +196,7 @@ document.addEventListener("where:layout-ready", async () => {
       document.getElementById("cafe-cover-image"),
       ...[1, 2, 3, 4].map((index) => document.getElementById(`cafe-gallery-image-${index}`))
     ];
-    const selected = images.slice(0, slots.length);
+    selected = images.slice(0, slots.length);
     selected.forEach((image, index) => {
       const element = slots[index];
       element.src = image.src || image.image_url;
@@ -183,13 +221,36 @@ document.addEventListener("where:layout-ready", async () => {
   const error = document.getElementById("detail-error");
   try {
     await window.WhereUser.ready;
-    const id = new URLSearchParams(window.location.search).get("id");
-    if (!id || !/^cafe-[a-zA-Z0-9-]+$/.test(id)) throw new Error("Choose a cafe from the WHERE? home page.");
+    const params = new URLSearchParams(window.location.search);
+    let id = params.get("id");
+    let slug = params.get("slug");
+    let areaSlug = params.get("area");
 
-    const result = await requestJson("api/cafes.php");
-    const cafe = result.cafes.find((item) => item.id === id);
+    // Clean URL: /surat/{area}/{cafe_slug}
+    const cleanSegments = window.location.pathname.replace(/^\/+|\/+$/g, "").split("/");
+    if (cleanSegments[0] === "surat" && cleanSegments.length >= 3) {
+      if (!areaSlug) areaSlug = decodeURIComponent(cleanSegments[1]);
+      if (!slug) slug = decodeURIComponent(cleanSegments[2]);
+    }
+
+    if (!id && !slug) throw new Error("Choose a cafe from the WHERE? home page.");
+
+    const result = await requestJson("/api/cafes.php");
+    const allCafes = result.cafes || [];
+    const cafe = allCafes.find((item) => {
+      if (slug && item.slug && item.slug.toLowerCase() === slug.toLowerCase()) return true;
+      if (id && item.id && item.id.toLowerCase() === id.toLowerCase()) return true;
+      return false;
+    });
     if (!cafe) throw new Error("That cafe is not in the current cafe list.");
-    renderCafe(cafe, result.cafes);
+
+    // Clean address bar URL to /surat/{area}/{slug} without ugly parameters
+    const cleanPath = `/surat/${encodeURIComponent(cafe.area_slug || 'all')}/${encodeURIComponent(cafe.slug || cafe.id)}`;
+    if (window.location.pathname !== cleanPath || window.location.search) {
+      window.history.replaceState(null, "", cleanPath);
+    }
+
+    renderCafe(cafe, allCafes);
     renderGallery(cafe);
   } catch (loadError) {
     console.error("Cafe details could not be loaded.", loadError);

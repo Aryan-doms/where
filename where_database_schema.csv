@@ -1,0 +1,60 @@
+table_name,column_name,data_type,nullable,key_or_relation,default_value,notes
+areas,area_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Stable area key
+areas,standardized_category,VARCHAR(191),NO,UNIQUE,,Existing normalized category
+areas,display_name,VARCHAR(150),NO,,,Name shown in the site or CMS
+cafes,cafe_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Stable cafe ID for URLs and relationships
+cafes,name,VARCHAR(255),NO,,,Display name
+cafes,area_id,INT UNSIGNED,NO,FOREIGN KEY areas.area_id,,Used for area filtering
+cafes,address,TEXT,NO,,,Display address
+cafes,niche_type,VARCHAR(200),NO,,,Explore category kept separate from vibe
+cafes,vibe,TEXT,NO,,,Short descriptive cafe text
+cafes,price_for_two,DECIMAL(10,2),NO,,,Numeric amount formatted by the frontend
+cafes,weekday_hours,VARCHAR(255),NO,,,Mon-Fri readable AM/PM hours
+cafes,weekend_hours,VARCHAR(255),NO,,,Sat-Sun readable AM/PM hours
+cafes,hours_note,VARCHAR(255),YES,,,Optional exceptions or extra service windows
+cafes,contact_number,VARCHAR(40),YES,,,Preserves plus signs and leading zeroes
+cafes,maps_url,VARCHAR(500),YES,,,Optional directions URL
+cafes,more_info,TEXT,YES,,,Extra cafe-specific note
+cafes,status,VARCHAR(20),NO,,,draft published or archived
+cafes,created_at,DATETIME,NO,,,Creation timestamp
+cafes,updated_at,DATETIME,NO,,,Last edit timestamp
+cuisines,cuisine_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Cuisine lookup ID
+cuisines,name,VARCHAR(120),NO,UNIQUE,,Cuisine name
+cafe_cuisines,cafe_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY cafes.cafe_id,,Cafe-to-cuisine link
+cafe_cuisines,cuisine_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY cuisines.cuisine_id,,Cafe-to-cuisine link
+amenities,amenity_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Amenity lookup ID
+amenities,name,VARCHAR(100),NO,UNIQUE,,Amenity name
+cafe_amenities,cafe_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY cafes.cafe_id,,Cafe-to-amenity link
+cafe_amenities,amenity_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY amenities.amenity_id,,Cafe-to-amenity link
+cafe_amenities,is_available,TINYINT(1),NO,,,Whether this amenity is available for the cafe
+cafe_images,image_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Image record ID
+cafe_images,cafe_id,INT UNSIGNED,NO,FOREIGN KEY cafes.cafe_id,,Owning cafe
+cafe_images,image_path,VARCHAR(500),NO,,,Project-relative path rather than image bytes
+cafe_images,alt_text,VARCHAR(255),YES,,,Accessible image description
+cafe_images,sort_order,SMALLINT UNSIGNED,NO,,,Gallery order
+cafe_images,is_cover,TINYINT(1),NO,,,Whether this image is the cover image
+users,user_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Account ID
+users,username,VARCHAR(50),NO,UNIQUE,,Unique login and display name
+users,phone_number,CHAR(10),NO,UNIQUE,,Ten digits stored without country code
+users,password_hash,VARCHAR(255),NO,,,PHP password_hash output only
+users,role,VARCHAR(20),NO,,user,user or admin role
+users,created_at,DATETIME,NO,,,Account creation timestamp
+favorites,user_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY users.user_id,,Saved cafe relation
+favorites,cafe_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY cafes.cafe_id,,Saved cafe relation
+favorites,created_at,DATETIME,NO,,,Favorite creation timestamp
+reviews,review_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Review ID
+reviews,cafe_id,INT UNSIGNED,NO,FOREIGN KEY cafes.cafe_id,,Reviewed cafe
+reviews,user_id,INT UNSIGNED,NO,FOREIGN KEY users.user_id,,Review author
+reviews,review_text,TEXT,NO,,,Review content
+reviews,created_at,DATETIME,NO,,,Review creation timestamp
+homepage_sections,section_id,INT UNSIGNED,NO,PRIMARY KEY AUTO_INCREMENT,,Homepage section ID
+homepage_sections,section_key,VARCHAR(100),NO,UNIQUE,,Stable CMS section key
+homepage_sections,title,VARCHAR(255),NO,,,Section title
+homepage_sections,body,TEXT,YES,,,Section body
+homepage_sections,media_path,VARCHAR(500),YES,,,Project-relative media path
+homepage_sections,link_label,VARCHAR(100),YES,,,Optional link label
+homepage_sections,link_url,VARCHAR(500),YES,,,Optional link URL
+homepage_sections,sort_order,SMALLINT UNSIGNED,NO,,,Homepage display order
+homepage_sections,is_published,TINYINT(1),NO,,,Whether CMS publishes the section
+homepage_featured_cafes,cafe_id,INT UNSIGNED,NO,PRIMARY KEY and FOREIGN KEY cafes.cafe_id,,Featured cafe relation
+homepage_featured_cafes,position,SMALLINT UNSIGNED,NO,UNIQUE,,Homepage featured position

@@ -6,19 +6,38 @@ function escapeExploreHtml(value) {
 }
 
 function fixedTiming(timing) {
-  return timing.split(/\r?\n/)
-    .map((segment) => segment.trim().replace(/12midnight/gi, "12:00am").replace(/12noon/gi, "12:00pm"))
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("\n");
+  if (!timing) return "";
+  const cleaned = timing.replace(/12midnight/gi, "12am").replace(/12noon/gi, "12pm");
+  const match = cleaned.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm)\s*[-–]\s*\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
+  if (match) {
+    return match[1].trim();
+  }
+  return "";
 }
 
 function cafeCard(cafe) {
   const saved = window.WhereUser.hasFavorite(cafe.id);
+  const cleanPrice = escapeExploreHtml(cafe.price.replace(" for two people (approx.)", "").replace(" for two", ""));
+  const timing = cafe.timing || "";
+  const numRating = Number(cafe.rating) || 0;
+  let ratingTier = "low";
+  if (numRating >= 4.0) {
+    ratingTier = "high";
+  } else if (numRating >= 3.5) {
+    ratingTier = "good";
+  } else if (numRating >= 3.0) {
+    ratingTier = "mid";
+  }
+  const ratingBadge = cafe.rating ? `<span class="explore-card__rating explore-card__rating--${ratingTier}" aria-label="Rated ${escapeExploreHtml(cafe.rating)} out of 5"><span class="explore-card__star" aria-hidden="true">★</span> ${escapeExploreHtml(cafe.rating)}</span>` : "";
+
+  const cafeUrl = cafe.url_path ? `/${cafe.url_path}` : `/surat/${encodeURIComponent(cafe.area_slug || 'all')}/${encodeURIComponent(cafe.slug || cafe.id)}`;
+
   return `
     <article class="explore-card">
       <div class="explore-card__media">
-        ${cafe.image ? `<img src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">` : ""}
+        <a class="explore-card__media-link" href="${cafeUrl}" aria-label="View details for ${escapeExploreHtml(cafe.name)}">
+          ${cafe.image ? `<img src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">` : ""}
+        </a>
         <span class="explore-card__area">${escapeExploreHtml(cafe.area)}</span>
         <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -28,12 +47,15 @@ function cafeCard(cafe) {
       </div>
       <div class="explore-card__body">
         <div class="explore-card__topline">
-          <h2><a href="cafe.html?id=${encodeURIComponent(cafe.id)}">${escapeExploreHtml(cafe.name)}</a></h2>
-          <p class="explore-card__hours"><span aria-hidden="true">·</span> ${escapeExploreHtml(cafe.timing)}</p>
+          <h2><a href="${cafeUrl}">${escapeExploreHtml(cafe.name)}</a></h2>
+          ${ratingBadge}
         </div>
-        <div class="explore-card__bottomline">
-          <p class="explore-card__cuisine">${escapeExploreHtml(cafe.cuisine)}</p>
-          <p class="explore-card__price">${escapeExploreHtml(cafe.price.replace(" for two people (approx.)", "").replace(" for two", ""))} for two</p>
+        <div class="explore-card__subline">
+          <div class="explore-card__subline-left">
+            <span class="explore-card__cuisine">${escapeExploreHtml(cafe.cuisine)}</span>
+            ${timing ? `<span class="explore-card__dot" aria-hidden="true">·</span><span class="explore-card__time">${escapeExploreHtml(timing)}</span>` : ""}
+          </div>
+          <span class="explore-card__price">${cleanPrice} for two</span>
         </div>
       </div>
     </article>
@@ -42,7 +64,7 @@ function cafeCard(cafe) {
 
 async function setupExplore() {
   await window.WhereUser.ready;
-  const response = await fetch("api/cafes.php");
+  const response = await fetch("/api/cafes.php");
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || `Could not load cafes (HTTP ${response.status}).`);
   const cafes = result.cafes.map((cafe) => ({
@@ -72,6 +94,26 @@ async function setupExplore() {
     document.querySelectorAll(".explore-chip").forEach((item) => item.classList.toggle("is-active", item === chip));
     render();
   }));
+
+  let urlAreaParam = new URLSearchParams(window.location.search).get("area");
+  const pathParts = window.location.pathname.replace(/^\/+|\/+$/g, "").split("/");
+  if (!urlAreaParam && pathParts[0] === "surat" && pathParts.length >= 2 && pathParts[1] !== "all" && pathParts[1] !== "all-spots") {
+    urlAreaParam = decodeURIComponent(pathParts[1]);
+  }
+  if (urlAreaParam) {
+    const matched = cafes.find((c) => (c.area_slug && c.area_slug.toLowerCase() === urlAreaParam.toLowerCase()) || c.area.toLowerCase() === urlAreaParam.toLowerCase());
+    if (matched) {
+      area.value = matched.area;
+      document.querySelectorAll(".explore-chip").forEach((chip) => {
+        chip.classList.toggle("is-active", chip.dataset.area === matched.area);
+      });
+    }
+  }
+
+  const urlNicheParam = new URLSearchParams(window.location.search).get("niche");
+  if (urlNicheParam) {
+    search.value = urlNicheParam;
+  }
   const render = (resetVisible = false) => {
     if (resetVisible) visibleCount = 15;
     const query = search.value.trim().toLowerCase();

@@ -4,9 +4,11 @@ CREATE TABLE IF NOT EXISTS areas (
   area_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   standardized_category VARCHAR(191) NOT NULL,
   display_name VARCHAR(150) NOT NULL,
+  slug VARCHAR(150) NOT NULL,
   PRIMARY KEY (area_id),
   UNIQUE KEY uq_areas_standardized_category (standardized_category),
-  UNIQUE KEY uq_areas_display_name (display_name)
+  UNIQUE KEY uq_areas_display_name (display_name),
+  UNIQUE KEY uq_areas_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS area_sources (
@@ -28,6 +30,7 @@ CREATE TABLE IF NOT EXISTS cafes (
   id VARCHAR(16) NOT NULL,
   source_row_number SMALLINT UNSIGNED NULL,
   name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
   area_id INT UNSIGNED NOT NULL,
   location TEXT NOT NULL,
   cuisine_source TEXT NOT NULL,
@@ -49,6 +52,7 @@ CREATE TABLE IF NOT EXISTS cafes (
   UNIQUE KEY uq_cafes_source_row_number (source_row_number),
   KEY ix_cafes_area_id (area_id),
   KEY ix_cafes_name (name),
+  UNIQUE KEY uq_cafes_slug (slug),
   KEY ix_cafes_niche_type (niche_type),
   KEY ix_cafes_price_for_two (price_for_two),
   KEY ix_cafes_status (status),
@@ -174,6 +178,18 @@ CREATE TABLE IF NOT EXISTS homepage_featured_cafes (
   UNIQUE KEY uq_homepage_featured_position (position),
   CONSTRAINT fk_homepage_featured_cafe FOREIGN KEY (cafe_id)
     REFERENCES cafes (id) ON UPDATE RESTRICT ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS homepage_areas (
+  area_id INT UNSIGNED NOT NULL,
+  position SMALLINT UNSIGNED NOT NULL,
+  image_1 VARCHAR(1000) NOT NULL DEFAULT '',
+  image_2 VARCHAR(1000) NOT NULL DEFAULT '',
+  image_3 VARCHAR(1000) NOT NULL DEFAULT '',
+  PRIMARY KEY (area_id),
+  UNIQUE KEY uq_homepage_areas_position (position),
+  CONSTRAINT fk_homepage_areas_area FOREIGN KEY (area_id)
+    REFERENCES areas (area_id) ON UPDATE RESTRICT ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO amenities (amenity_key, display_name) VALUES

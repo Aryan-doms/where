@@ -2,32 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <meta name="description" content="Cafe details from the WHERE? Surat guide.">
   <title>Cafe — WHERE?</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="shared-layout.js" defer></script>
-  <script src="user-ui.js" defer></script>
-  <script src="cafe-details.js" defer></script>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/shared-layout.js" defer></script>
+  <script src="/user-ui.js" defer></script>
+  <script src="/cafe-details.js" defer></script>
 </head>
 <body class="cafe-detail-page">
   <header class="site-header is-scrolled detail-header">
-    <a class="brand-image brand-image--header" href="index.html" aria-label="WHERE? home">
-      <img src="where.png" alt="WHERE?">
+    <a class="brand-image brand-image--header" href="/" aria-label="WHERE? home">
+      <img src="/where.png" alt="WHERE?">
     </a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="explore.html">Explore</a>
-      <a href="index.html#home" class="nav-disabled" title="Guides coming soon">Guides</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#home" class="nav-disabled" title="Contact coming soon">Contact</a>
+      <a href="/explore.html">Explore</a>
+      <a href="/#home" class="nav-disabled" title="Guides coming soon">Guides</a>
+      <a href="/#about">About</a>
+      <a href="/#home" class="nav-disabled" title="Contact coming soon">Contact</a>
     </nav>
-    <a class="detail-header__profile profile-nav" href="profile.html" data-account-nav>Log in</a>
+    <a class="detail-header__profile profile-nav" href="/profile.html" data-account-nav>Log in</a>
   </header>
 
   <main class="cafe-detail-main">
     <nav class="detail-breadcrumb" aria-label="Cafe breadcrumb">
-      <a href="index.html#featured">All spots</a>
+      <a href="/explore.html">All spots</a>
       <span aria-hidden="true">/</span>
       <span id="breadcrumb-area"></span>
       <span aria-hidden="true">/</span>
@@ -37,8 +38,21 @@
     <section class="detail-hero" aria-labelledby="cafe-name" hidden>
       <div class="detail-hero__copy">
         <h1 id="cafe-name"></h1>
-        <p class="detail-niche" id="cafe-cuisine-summary"></p>
-        <button class="favorite-button" id="favorite-button" type="button" aria-pressed="false">♡ <span>Save spot</span></button>
+        <div class="detail-hero__meta">
+          <span class="detail-hero__rating" id="cafe-rating-badge" hidden></span>
+          <span class="detail-dot" id="cafe-rating-dot" aria-hidden="true" hidden>·</span>
+          <span class="detail-hero__niche" id="cafe-cuisine-summary"></span>
+          <span class="detail-dot" aria-hidden="true">·</span>
+          <span class="detail-hero__cuisines" id="cafe-cuisines-list"></span>
+        </div>
+        <div class="detail-hero__actions">
+          <button class="favorite-button" id="favorite-button" type="button" aria-pressed="false" aria-label="Save spot">
+            <svg class="favorite-heart-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path>
+            </svg>
+          </button>
+          <a class="detail-directions-button" id="hero-directions-button" href="#" target="_blank" rel="noopener">Get directions</a>
+        </div>
       </div>
       <div class="detail-price">
         <span class="detail-label">PRICE FOR TWO</span>
@@ -152,13 +166,13 @@
   <footer class="site-footer" id="about">
     <div class="footer-panel">
       <div class="footer-stickers" aria-hidden="true">
-        <img src="assets/tenis.png" alt="">
-        <img src="assets/crossiont.png" alt="">
+        <img src="/assets/tenis.png" alt="">
+        <img src="/assets/crossiont.png" alt="">
       </div>
       <span class="footer-star-mark" aria-hidden="true">✦</span>
       <div class="footer-mark" aria-hidden="true">WHERE?</div>
       <div class="footer-contact">
-        <img src="assets/contact-script.gif" alt="Contact WHERE?">
+        <img src="/assets/contact-script.gif" alt="Contact WHERE?">
         <a href="mailto:query@where.com">query@where.com</a>
       </div>
     </div>

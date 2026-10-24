@@ -35,21 +35,33 @@ function whereCafeRecord(PDO $pdo, array $row): array
 
     $cuisineNames = array_column($cuisines->fetchAll(), 'name');
     $gallery = $images->fetchAll();
-    $timing = trim((string) $row['timing']);
-    if ($timing === '') {
-        $timing = trim(implode("\n", array_filter([
-            $row['weekday_hours'] !== '' ? 'Mon–Fri: ' . $row['weekday_hours'] : '',
-            $row['weekend_hours'] !== '' ? 'Sat–Sun: ' . $row['weekend_hours'] : '',
-            $row['hours_note'] !== '' ? $row['hours_note'] : ''
-        ])));
-    }
+    $extractRange = static function (?string $t): string {
+        if (!$t) return '';
+        $cleaned = preg_replace('/12midnight/i', '12am', $t);
+        $cleaned = preg_replace('/12noon/i', '12pm', $cleaned);
+        $cleaned = str_replace(["\xE2\x80\x93", "\xE2\x80\x94", "–", "—"], '-', $cleaned);
+        if (preg_match('/(\d{1,2}(?::\d{2})?\s*(?:am|pm)\s*-\s*\d{1,2}(?::\d{2})?\s*(?:am|pm))/i', $cleaned, $m)) {
+            return str_replace('-', '–', trim($m[1]));
+        }
+        return '';
+    };
+
+    $weekdayRange = $extractRange($row['weekday_hours']) ?: ($extractRange($row['timing']) ?: '11am – 11pm');
+    $weekendRange = $extractRange($row['weekend_hours']) ?: ($extractRange($row['timing']) ?: $weekdayRange);
+    $timing = "Mon–Fri: {$weekdayRange}\nSat–Sun: {$weekendRange}";
+
     $price = $row['price_range'] ?: '₹' . number_format((float) $row['price_for_two'], 0);
 
     return [
         'id' => $cafeId,
         'name' => $row['name'],
+        'slug' => $row['slug'] ?? '',
         'area_id' => (int) $row['area_id'],
         'area' => $row['area'],
+        'area_slug' => $row['area_slug'] ?? '',
+        'city' => 'Surat',
+        'city_slug' => 'surat',
+        'url_path' => 'surat/' . ($row['area_slug'] ?? 'area') . '/' . ($row['slug'] ?? $cafeId),
         'location' => $row['location'],
         'address' => $row['location'],
         'cuisine' => implode(', ', $cuisineNames) ?: $row['cuisine_source'],
@@ -63,6 +75,7 @@ function whereCafeRecord(PDO $pdo, array $row): array
         'contact' => $row['contact_details_number'],
         'price' => $price,
         'price_for_two' => (float) $row['price_for_two'],
+        'rating' => isset($row['rating']) && (float) $row['rating'] > 0 ? number_format((float) $row['rating'], 1) : null,
         'vibe' => $row['vibe_ambiance'],
         'moreInfo' => $row['more_info'],
         'maps_url' => $row['maps_url'],
@@ -85,7 +98,7 @@ function whereCafeRecord(PDO $pdo, array $row): array
 
 function whereFetchCafes(PDO $pdo, bool $publishedOnly = true): array
 {
-    $sql = 'SELECT c.*, a.display_name AS area
+    $sql = 'SELECT c.*, a.display_name AS area, a.slug AS area_slug
             FROM cafes c
             JOIN areas a ON a.area_id = c.area_id';
     if ($publishedOnly) {

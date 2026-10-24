@@ -49,16 +49,19 @@ document.addEventListener("where:layout-ready", async () => {
       list.innerHTML = '<p class="detail-muted">Your saved spots will show up here.</p>';
       return;
     }
-    const response = await fetch("api/cafes.php");
+    const response = await fetch("/api/cafes.php");
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || `Could not load saved spots (HTTP ${response.status}).`);
     const cafes = result.cafes.filter((cafe) => favorites.includes(cafe.id));
     list.innerHTML = cafes.length
-      ? cafes.map((cafe) => `
-        <a class="my-spot" href="cafe.html?id=${encodeURIComponent(cafe.id)}">
+      ? cafes.map((cafe) => {
+        const spotUrl = cafe.url_path ? `/${cafe.url_path}` : `/surat/${encodeURIComponent(cafe.area_slug || 'all')}/${encodeURIComponent(cafe.slug || cafe.id)}`;
+        return `
+        <a class="my-spot" href="${spotUrl}">
           <span><strong>${escapeHtml(cafe.name)}</strong><small>${escapeHtml(cafe.area)}</small></span>
           <span aria-hidden="true">↗</span>
-        </a>`).join("")
+        </a>`;
+      }).join("")
       : '<p class="detail-muted">Your saved spots will show up here.</p>';
   }
 
