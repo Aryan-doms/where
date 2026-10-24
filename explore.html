@@ -13,10 +13,10 @@
 <body class="explore-page">
   <div data-where-header></div>
   <main class="explore-main">
-    <div class="explore-heading">
-      <h1>All spots.</h1>
-      <p>Find a place for your outing.</p>
-    </div>
+    <header class="explore-heading">
+      <h1>Find your somewhere<span class="title-period">.</span></h1>
+      <p class="explore-subtitle">Curated coffee bars, quiet corners, artisanal bakes, and roasteries across Surat.</p>
+    </header>
     <form class="explore-searchbar" id="explore-filters">
       <label class="explore-search">
         <span class="visually-hidden">Search cafes</span>
@@ -37,12 +37,109 @@
   <dialog class="filter-dialog" id="filter-dialog" aria-labelledby="filter-title">
     <form class="filter-dialog__panel" method="dialog" id="filter-form">
       <button class="filter-dialog__close" id="close-filter" type="button" aria-label="Close filters">×</button>
-      <p class="eyebrow">REFINE THE LIST</p>
-      <h2 id="filter-title">Find your kind of spot.</h2>
-      <label for="area-filter">Area</label>
-      <select id="area-filter"><option value="">All areas</option></select>
-      <label for="cuisine-filter">Cuisine</label>
-      <select id="cuisine-filter"><option value="">All cuisines</option></select>
+      <div class="filter-dialog__header">
+        <h2 id="filter-title">Find your kind of spot.</h2>
+        <div class="filter-dialog__current" id="filter-dialog-current" hidden></div>
+      </div>
+
+      <div class="filter-dialog__body">
+        <!-- Left Sidebar: Filter Categories -->
+        <nav class="filter-dialog__tabs" aria-label="Filter categories">
+          <button type="button" class="filter-tab-btn is-active" data-tab="area">
+            <span>Area</span>
+            <span class="filter-tab-badge" id="tab-badge-area" hidden>0</span>
+          </button>
+          <button type="button" class="filter-tab-btn" data-tab="price">
+            <span>Price Range</span>
+            <span class="filter-tab-badge" id="tab-badge-price" hidden>0</span>
+          </button>
+          <button type="button" class="filter-tab-btn" data-tab="cuisine">
+            <span>Cuisine</span>
+            <span class="filter-tab-badge" id="tab-badge-cuisine" hidden>0</span>
+          </button>
+          <button type="button" class="filter-tab-btn" data-tab="niche">
+            <span>Niche</span>
+            <span class="filter-tab-badge" id="tab-badge-niche" hidden>0</span>
+          </button>
+          <button type="button" class="filter-tab-btn" data-tab="rating">
+            <span>Rating</span>
+            <span class="filter-tab-badge" id="tab-badge-rating" hidden>0</span>
+          </button>
+        </nav>
+
+        <!-- Right Panels: Option Checkboxes & Radios -->
+        <div class="filter-dialog__panels">
+          <!-- Area Panel (Checkboxes) -->
+          <div class="filter-tab-panel is-active" id="panel-area">
+            <div class="filter-options-list" id="filter-list-area">
+              <!-- Dynamically populated checkboxes -->
+            </div>
+          </div>
+
+          <!-- Price Range Panel (Checkboxes) -->
+          <div class="filter-tab-panel" id="panel-price">
+            <div class="filter-options-list">
+              <label class="filter-option-row">
+                <input type="checkbox" name="filter-price" value="under-600">
+                <span class="filter-option-text">Under ₹600 </span>
+              </label>
+              <label class="filter-option-row">
+                <input type="checkbox" name="filter-price" value="600-1000">
+                <span class="filter-option-text">₹600 – ₹1,000 </span>
+              </label>
+              <label class="filter-option-row">
+                <input type="checkbox" name="filter-price" value="1000-1500">
+                <span class="filter-option-text">₹1,000 – ₹1,500 </span>
+              </label>
+              <label class="filter-option-row">
+                <input type="checkbox" name="filter-price" value="above-1500">
+                <span class="filter-option-text">Above ₹1,500 </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Cuisine Panel (Checkboxes) -->
+          <div class="filter-tab-panel" id="panel-cuisine">
+            <div class="filter-options-list" id="filter-list-cuisine">
+              <!-- Dynamically populated checkboxes -->
+            </div>
+          </div>
+
+          <!-- Category / Niche Panel (Checkboxes) -->
+          <div class="filter-tab-panel" id="panel-niche">
+            <div class="filter-options-list" id="filter-list-niche">
+              <!-- Dynamically populated checkboxes -->
+            </div>
+          </div>
+
+          <!-- Rating Panel (Radio buttons: above XX) -->
+          <div class="filter-tab-panel" id="panel-rating">
+            <div class="filter-options-list">
+              <label class="filter-option-row">
+                <input type="radio" name="filter-rating" value="" checked>
+                <span class="filter-option-text">Any rating</span>
+              </label>
+              <label class="filter-option-row">
+                <input type="radio" name="filter-rating" value="4.5">
+                <span class="filter-option-text">Above 4.5</span>
+              </label>
+              <label class="filter-option-row">
+                <input type="radio" name="filter-rating" value="4.0">
+                <span class="filter-option-text">Above 4.0</span>
+              </label>
+              <label class="filter-option-row">
+                <input type="radio" name="filter-rating" value="3.5">
+                <span class="filter-option-text">Above 3.5</span>
+              </label>
+              <label class="filter-option-row">
+                <input type="radio" name="filter-rating" value="3.0">
+                <span class="filter-option-text">Above 3.0 </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="filter-dialog__actions">
         <button class="text-button" id="clear-filters" type="button">Clear all</button>
         <button class="pill-link pill-link--dark" id="apply-filters" type="submit">Apply filters</button>

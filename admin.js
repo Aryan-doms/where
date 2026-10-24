@@ -14,6 +14,7 @@ const state = {
   editorCoverId: 0,
   filterSearch: "",
   filterArea: "",
+  filterNiche: "",
   filterStatus: "",
   currentPage: 1,
   pageSize: 25,
@@ -222,15 +223,17 @@ function updateDashboardStats() {
 function renderCafesTable() {
   const query = state.filterSearch.trim().toLowerCase();
   const areaFilter = state.filterArea;
+  const nicheFilter = state.filterNiche;
   const statusFilter = state.filterStatus;
 
   const allCafes = state.data?.cafes || [];
   const filtered = allCafes.filter((cafe) => {
-    const searchHaystack = `${cafe.name} ${cafe.area} ${cafe.cuisine} ${cafe.niche} ${cafe.slug || ""}`.toLowerCase();
+    const searchHaystack = `${cafe.name} ${cafe.area} ${cafe.cuisine} ${cafe.niche} ${cafe.niche_type || ""} ${cafe.slug || ""}`.toLowerCase();
     const matchSearch = !query || searchHaystack.includes(query);
     const matchArea = !areaFilter || String(cafe.area_id) === String(areaFilter) || cafe.area_slug === areaFilter;
+    const matchNiche = !nicheFilter || (cafe.niche || cafe.niche_type) === nicheFilter;
     const matchStatus = !statusFilter || cafe.status === statusFilter;
-    return matchSearch && matchArea && matchStatus;
+    return matchSearch && matchArea && matchNiche && matchStatus;
   });
 
   const total = filtered.length;
@@ -263,9 +266,12 @@ function renderCafesTable() {
       resetBtn.addEventListener("click", () => {
         state.filterSearch = "";
         state.filterArea = "";
+        state.filterNiche = "";
         state.filterStatus = "";
         document.querySelector("#input-search-cafes").value = "";
         document.querySelector("#select-filter-area").value = "";
+        const selectNiche = document.querySelector("#select-filter-niche");
+        if (selectNiche) selectNiche.value = "";
         document.querySelectorAll(".status-tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.status === ""));
         renderCafesTable();
       });
@@ -1180,6 +1186,15 @@ async function loadStudioData() {
     <option value="${escapeHtml(a.slug)}">${escapeHtml(a.display_name)}</option>
   `).join("");
 
+  // Populate niche/category filter
+  const filterNiche = document.querySelector("#select-filter-niche");
+  if (filterNiche) {
+    const niches = [...new Set((data.cafes || []).map((c) => c.niche || c.niche_type).filter(Boolean))].sort();
+    filterNiche.innerHTML = `<option value="">All Categories (${niches.length})</option>` + niches.map((n) => `
+      <option value="${escapeHtml(n)}">${escapeHtml(n)}</option>
+    `).join("");
+  }
+
   // Populate editor area select
   const editorArea = document.querySelector("#field-area");
   editorArea.innerHTML = '<option value="">Select Area</option>' + data.areas.map((a) => `
@@ -1268,6 +1283,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelector("#select-filter-area").addEventListener("change", (e) => {
     state.filterArea = e.target.value;
+    state.currentPage = 1;
+    renderCafesTable();
+  });
+
+  document.querySelector("#select-filter-niche")?.addEventListener("change", (e) => {
+    state.filterNiche = e.target.value;
     state.currentPage = 1;
     renderCafesTable();
   });
