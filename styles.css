@@ -64,18 +64,21 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
 .nav-note, .coming-soon { margin-left: 3px; color: #686b70; font-size: .65rem; font-weight: 400; }
 .site-header--plain { position: absolute; color: var(--ink); }
 .auth-header-link { font-size: .8rem; font-weight: 700; }
-.about-page { color: #fff; background: #111; }
+.about-page { color: #fff; background: #000; }
 .about-page .site-header { color: #fff; }
-.about-page .site-header.is-scrolled { color: #fff; background: #111f; box-shadow: 0 1px 0 #ffffff20; }
+.about-page .site-header.is-scrolled { color: #fff; background: #000000f0; box-shadow: 0 1px 0 #ffffff20; }
 .about-page .main-nav a:hover { opacity: .55; }
-.about-story { position: relative; display: flex; min-height: min(900px, 100svh); flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 130px 5% 80px; text-align: center; }
+.about-story { position: relative; display: flex; min-height: min(900px, 100svh); flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 130px 5% 80px; text-align: center; background: #000; }
 .about-kicker { margin: 0 0 14px; color: #ffffffb8; font-size: .68rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .about-story h1 { margin: 0; font-family: var(--serif); font-size: clamp(4.8rem, 13vw, 11rem); font-weight: 500; letter-spacing: -.1em; line-height: .78; }
 .about-copy { width: min(680px, 100%); margin: 42px auto 34px; font-size: clamp(1.15rem, 2.5vw, 2rem); letter-spacing: -.04em; line-height: 1.15; }
 .about-copy p { margin: 0 0 23px; }
 .about-copy p:last-child { margin-bottom: 0; }
-.about-story .pill-link { color: #111; border: 0; background: #fff; }
-.about-globe { display: block; width: 92px; height: 92px; margin: 0 auto 30px; object-fit: contain; mix-blend-mode: screen; }
+.about-story .pill-link { position: relative; z-index: 2; color: #111; border: 0; background: #fff; }
+.about-globe { display: block; width: 92px; height: 92px; margin: 0 auto 30px; object-fit: contain; }
+.about-story__bottom { position: absolute; bottom: 0; z-index: 1; pointer-events: none; user-select: none; }
+.about-story__bottom--left { left: 0; width: clamp(140px, 22vw, 320px); height: auto; }
+.about-story__bottom--right { right: 0; width: clamp(110px, 17vw, 240px); height: auto; }
 .about-story__sticker { position: absolute; width: 100px; height: 100px; object-fit: contain; mix-blend-mode: screen; opacity: .9; }
 .about-story__sticker--left { top: 18%; left: 6%; transform: rotate(-15deg); filter: invert(1); }
 .about-story__sticker--right { top: 13%; right: 7%; transform: rotate(12deg); }
@@ -608,6 +611,8 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
   .site-header { padding: 14px 5%; }
   .brand-image--header { width: 108px; height: 50px; }
   .about-story { min-height: 760px; padding-top: 120px; }
+  .about-story__bottom--left { width: clamp(90px, 24vw, 140px); }
+  .about-story__bottom--right { width: clamp(75px, 20vw, 115px); }
   .about-story__sticker { width: 70px; height: 70px; }
   .about-story__sticker--left { top: 14%; left: 4%; }
   .about-story__sticker--right { top: 12%; right: 4%; }
