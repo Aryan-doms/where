@@ -87,7 +87,7 @@ def format_cafe(conn, row):
 
     return {
         "id": cafe_id,
-        "name": row["name"],
+        "name": (row["name"] or "").replace("\ufffd", "'"),
         "slug": row["slug"] or "",
         "area_id": int(row["area_id"]),
         "area": row["area"],
@@ -101,7 +101,7 @@ def format_cafe(conn, row):
         "cuisines": cuisines,
         "niche": row["niche_type"],
         "niche_type": row["niche_type"],
-        "timing": timing,
+        "timing": timing.replace("\ufffd", "–"),
         "weekday_hours": row["weekday_hours"],
         "weekend_hours": row["weekend_hours"],
         "hours_note": row["hours_note"],
