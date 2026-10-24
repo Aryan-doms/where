@@ -17,9 +17,10 @@ function fixedTiming(timing) {
 
 function cafeCard(cafe) {
   const saved = window.WhereUser.hasFavorite(cafe.id);
+  const cleanName = escapeExploreHtml((cafe.name || "").replace(/\ufffd/g, "'"));
   const priceNum = Math.round(Number(cafe.price_for_two || 0));
   const cleanPrice = priceNum > 0 ? `₹${priceNum.toLocaleString("en-IN")}` : escapeExploreHtml((cafe.price || "").replace(/^\?/, "₹").replace(" for two people (approx.)", "").replace(" for two", ""));
-  const timing = cafe.timing || "";
+  const timing = (cafe.timing || "").replace(/\ufffd/g, "–");
   const numRating = Number(cafe.rating) || 0;
   let ratingTier = "low";
   if (numRating >= 4.0) {
@@ -37,14 +38,14 @@ function cafeCard(cafe) {
   return `
     <article class="explore-card">
       <div class="explore-card__media">
-        <a class="explore-card__media-link" href="${cafeUrl}" aria-label="View details for ${escapeExploreHtml(cafe.name)}">
+        <a class="explore-card__media-link" href="${cafeUrl}" aria-label="View details for ${cleanName}">
           ${cafe.image ? `
             <img class="explore-card__image explore-card__image--primary" src="${escapeExploreHtml(cafe.image)}" alt="" loading="lazy">
             ${hoverImage ? `<img class="explore-card__image explore-card__image--hover" src="${escapeExploreHtml(hoverImage)}" alt="" loading="lazy">` : ""}
-          ` : `<div class="explore-card__media-placeholder"><span>${escapeExploreHtml(cafe.name)}</span></div>`}
+          ` : `<div class="explore-card__media-placeholder"><span>${cleanName}</span></div>`}
         </a>
         <span class="explore-card__area">${escapeExploreHtml(cafe.area)}</span>
-        <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${escapeExploreHtml(cafe.name)}" aria-pressed="${saved}">
+        <button class="explore-card__heart" data-favorite-id="${cafe.id}" type="button" aria-label="${saved ? "Remove" : "Save"} ${cleanName}" aria-pressed="${saved}">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path>
           </svg>
@@ -52,7 +53,7 @@ function cafeCard(cafe) {
       </div>
       <div class="explore-card__body">
         <div class="explore-card__topline">
-          <h2><a href="${cafeUrl}">${escapeExploreHtml(cafe.name)}</a></h2>
+          <h2><a href="${cafeUrl}">${cleanName}</a></h2>
           ${ratingBadge}
         </div>
         <div class="explore-card__subline">
