@@ -34,26 +34,38 @@ if [ ! -f api/config.php ]; then
   cp api/config.example.php api/config.php
 fi
 
-# 4. Start MySQL Docker container
+# 4. Free port 8000 if an old PHP server is still running
+EXISTING_PID=$(lsof -ti :8000 -sTCP:LISTEN 2>/dev/null || true)
+if [ -n "$EXISTING_PID" ]; then
+  echo "==> Freeing port 8000 (stopping previous server PID $EXISTING_PID)..."
+  kill -9 $EXISTING_PID 2>/dev/null || true
+  sleep 1
+fi
+
+# 5. Start MySQL Docker container
 echo "==> 1. Starting database container..."
 docker compose up -d
 
-# 5. Wait until MySQL is ready
+# 6. Wait until MySQL is ready
 echo "==> 2. Waiting for MySQL to be ready..."
-until docker exec where-mysql mysqladmin ping -h localhost -u root -pwhere_root_password --silent > /dev/null 2>&1; do
+RETRIES=30
+until docker exec where-mysql mysqladmin ping -h localhost -u root -pwhere_root_password --silent > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
   sleep 1
+  RETRIES=$((RETRIES - 1))
 done
 
-# 6. Load seed database with all 128 cafes & photos
-echo "==> 3. Ensuring database data is loaded..."
+# 7. Load seed database with all 128 cafes & photos
+echo "==> 3. Ensuring database is seeded with all 128 cafes & photos..."
 docker exec -i where-mysql mysql -uroot -pwhere_root_password cafecompass < database/seed.sql > /dev/null 2>&1 || true
 
-# 7. Start local PHP server and open browser
+# 8. Start local PHP server and auto-open browser
 echo "==> 4. Server ready! Opening in your browser:"
 echo "     👉 http://localhost:8000"
 echo "     (Press Ctrl+C to stop the server)"
 echo ""
 
-(sleep 1 && open "http://localhost:8000") &
+if command -v open > /dev/null 2>&1; then
+  (sleep 1 && open "http://localhost:8000") &
+fi
 
 php -S localhost:8000 router.php
