@@ -235,7 +235,12 @@ document.addEventListener("where:layout-ready", async () => {
 
     if (!id && !slug) throw new Error("Choose a cafe from the WHERE? home page.");
 
-    const result = await requestJson("/api/cafes.php");
+    let result;
+    try {
+      result = await requestJson("/api/cafes.php");
+    } catch (e) {
+      result = await requestJson("/api/cafes.json");
+    }
     const allCafes = result.cafes || [];
     const cafe = allCafes.find((item) => {
       if (slug && item.slug && item.slug.toLowerCase() === slug.toLowerCase()) return true;

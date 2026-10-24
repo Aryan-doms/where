@@ -174,9 +174,12 @@ function setupSlider() {
 }
 
 async function loadCafeDataset() {
-  const response = await fetch("api/home-data.php");
+  let response = await fetch("api/home-data.php");
   if (!response.ok) {
-    const result = await response.json();
+    response = await fetch("api/home-data.json");
+  }
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
     throw new Error(result.error || `Could not load cafe data (HTTP ${response.status}).`);
   }
   return response.json();

@@ -68,7 +68,10 @@ function cafeCard(cafe) {
 
 async function setupExplore() {
   await window.WhereUser.ready;
-  const response = await fetch("/api/cafes.php");
+  let response = await fetch("/api/cafes.php");
+  if (!response.ok) {
+    response = await fetch("/api/cafes.json");
+  }
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || `Could not load cafes (HTTP ${response.status}).`);
   const cafes = result.cafes.map((cafe) => ({

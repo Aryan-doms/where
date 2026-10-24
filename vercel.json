@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/styles.css", "destination": "/css/styles.css" },
+    { "source": "/css/(.*)", "destination": "/css/$1" },
+    { "source": "/js/(.*)", "destination": "/js/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/shared-layout.js", "destination": "/js/shared-layout.js" },
+    { "source": "/user-ui.js", "destination": "/js/user-ui.js" },
+    { "source": "/script.js", "destination": "/js/script.js" },
+    { "source": "/explore.js", "destination": "/js/explore.js" },
+    { "source": "/cafe-details.js", "destination": "/js/cafe-details.js" },
+    { "source": "/auth.js", "destination": "/js/auth.js" },
+    { "source": "/admin.js", "destination": "/js/admin.js" },
+    { "source": "/explore.html", "destination": "/html/explore.html" },
+    { "source": "/about.html", "destination": "/html/about.html" },
+    { "source": "/cafe.html", "destination": "/html/cafe.html" },
+    { "source": "/login.html", "destination": "/html/login.html" },
+    { "source": "/signup.html", "destination": "/html/signup.html" },
+    { "source": "/profile.html", "destination": "/html/profile.html" },
+    { "source": "/admin.html", "destination": "/html/admin.html" },
+    { "source": "/header.html", "destination": "/html/header.html" },
+    { "source": "/footer.html", "destination": "/html/footer.html" },
+    { "source": "/surat/:area/:slug", "destination": "/html/cafe.html" },
+    { "source": "/surat/:area", "destination": "/html/explore.html" },
+    { "source": "/surat", "destination": "/html/explore.html" },
+    { "source": "/api/:path*", "destination": "/api/index.py?__route=:path*" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "api/**"
+    }
+  }
+}
