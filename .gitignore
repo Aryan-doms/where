@@ -1,4 +1,5 @@
 .DS_Store
+*.zip
 /api/config.php
 /archive/
 /oep_submission/
