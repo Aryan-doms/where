@@ -454,6 +454,16 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
 .review-dialog__close { position: absolute; top: 17px; right: 18px; border: 0; color: var(--ink); background: transparent; font-size: 1.5rem; cursor: pointer; }
 .detail-review__submit { margin-top: 8px; padding: 12px 16px; border: 0; color: #fff; background: var(--ink); font: inherit; font-size: .7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; }
 .review-dialog__list { display: grid; gap: 14px; max-height: 60vh; overflow-y: auto; }
+.review-login-dialog__panel { border-radius: 16px; }
+.review-login-dialog__panel h2 { font-size: clamp(1.8rem, 4vw, 2.3rem); line-height: 1.05; letter-spacing: -0.05em; margin: 4px 0 12px; }
+.review-login-dialog__desc { margin: 0 0 18px; color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+.review-login-dialog__actions { display: flex; gap: 10px; align-items: center; }
+.review-login-dialog__login-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 22px; border: 1px solid var(--ink); border-radius: 99px; background: var(--ink); color: #fff; font: inherit; font-size: 0.72rem; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.15s ease; }
+.review-login-dialog__login-btn:hover { opacity: 0.85; }
+.review-login-dialog__close-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border: 1px solid #171b2538; border-radius: 99px; background: transparent; color: var(--ink); font: inherit; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; transition: background 0.15s ease; }
+.review-login-dialog__close-btn:hover { background: #171b250d; }
+.review-login-dialog__login-btn:focus-visible,
+.review-login-dialog__close-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .detail-related { display: grid; grid-template-columns: .7fr 1.3fr; gap: 40px; padding-top: 58px; }
 .detail-related__heading { text-align: right; }
 .detail-related__heading h2 { margin: 8px 0 0; font-family: var(--serif); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 500; letter-spacing: -.065em; }

@@ -45,14 +45,36 @@ document.addEventListener("where:layout-ready", async () => {
 
   function setupReviews(cafe) {
     const allDialog = document.getElementById("all-reviews-dialog");
-    document.getElementById("see-all-reviews").addEventListener("click", () => allDialog.showModal());
-    document.getElementById("close-all-reviews").addEventListener("click", () => allDialog.close());
+    document.getElementById("see-all-reviews")?.addEventListener("click", () => allDialog?.showModal());
+    document.getElementById("close-all-reviews")?.addEventListener("click", () => allDialog?.close());
+    allDialog?.addEventListener("click", (event) => {
+      if (event.target === allDialog) allDialog.close();
+    });
+
+    const loginDialog = document.getElementById("review-login-dialog");
+    const closeLoginDialog = () => loginDialog?.close();
+    document.getElementById("close-review-login-dialog")?.addEventListener("click", closeLoginDialog);
+    document.getElementById("cancel-review-login-dialog")?.addEventListener("click", closeLoginDialog);
+    loginDialog?.addEventListener("click", (event) => {
+      if (event.target === loginDialog) loginDialog.close();
+    });
+
     const form = document.getElementById("review-form");
-    form.addEventListener("submit", async (event) => {
+    const submitBtn = document.getElementById("add-review");
+
+    submitBtn?.addEventListener("click", (event) => {
+      const user = window.WhereUser.current();
+      if (!user) {
+        event.preventDefault();
+        loginDialog?.showModal();
+      }
+    });
+
+    form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const user = window.WhereUser.current();
       if (!user) {
-        window.location.href = "/login.html";
+        loginDialog?.showModal();
         return;
       }
       const button = document.getElementById("add-review");
@@ -217,6 +239,9 @@ document.addEventListener("where:layout-ready", async () => {
     const photoDialog = document.getElementById("all-photos-dialog");
     document.querySelector(".detail-gallery__all").addEventListener("click", () => photoDialog.showModal());
     document.getElementById("close-all-photos").addEventListener("click", () => photoDialog.close());
+    photoDialog?.addEventListener("click", (event) => {
+      if (event.target === photoDialog) photoDialog.close();
+    });
     gallery.hidden = false;
   }
 
