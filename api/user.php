@@ -32,8 +32,8 @@ try {
         $password = (string) ($data['password'] ?? '');
 
         // Validation for username, phone and password
-        if (!preg_match('/^[a-z0-9_]{3,20}$/', $username)) {
-            whereJson(['error' => 'Username must be 3-20 characters: letters, numbers, and underscores only.'], 422);
+        if (!preg_match('/^[a-z0-9_]{3,15}$/', $username)) {
+            whereJson(['error' => 'Username must be 3-15 characters: letters, numbers, and underscores only.'], 422);
         }
         if (!preg_match('/^\d{10}$/', $phone)) {
             whereJson(['error' => 'Phone number must be exactly 10 digits (0-9).'], 422);

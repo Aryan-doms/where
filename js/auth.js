@@ -34,8 +34,8 @@ document.addEventListener("where:layout-ready", async () => {
         form.querySelector("#signup-phone")?.focus();
         return;
       }
-      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-        showAuthMessage("Username must be 3–20 characters: letters, numbers, and underscores only.");
+      if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
+        showAuthMessage("Username must be 3–15 characters: letters, numbers, and underscores only.");
         form.querySelector("#signup-username")?.focus();
         return;
       }
