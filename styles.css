@@ -75,7 +75,7 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
 .about-copy p { margin: 0 0 23px; }
 .about-copy p:last-child { margin-bottom: 0; }
 .about-story .pill-link { color: #111; border: 0; background: #fff; }
-.about-globe { display: block; width: 92px; height: 92px; margin: 0 auto 30px; object-fit: contain; }
+.about-globe { display: block; width: 92px; height: 92px; margin: 0 auto 30px; object-fit: contain; mix-blend-mode: screen; }
 .about-story__sticker { position: absolute; width: 100px; height: 100px; object-fit: contain; mix-blend-mode: screen; opacity: .9; }
 .about-story__sticker--left { top: 18%; left: 6%; transform: rotate(-15deg); filter: invert(1); }
 .about-story__sticker--right { top: 13%; right: 7%; transform: rotate(12deg); }
