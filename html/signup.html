@@ -18,15 +18,24 @@
       <form id="signup-form" class="auth-form" novalidate>
         <label for="signup-phone">Phone number</label>
         <input id="signup-phone" name="phone" type="tel" autocomplete="tel" inputmode="numeric" pattern="[0-9]{10}" minlength="10" maxlength="10" placeholder="10-digit mobile number" required>
-        <small class="form-text" style="font-size: 0.72rem; color: #70747b; margin-top: -4px; margin-bottom: 6px;">Digits 0–9 only, exactly 10 digits</small>
 
         <label for="signup-username">Username</label>
-        <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="15" pattern="[A-Za-z0-9_]{3,15}" placeholder="Choose a username (3–15 chars)" required>
-        <small class="form-text" style="font-size: 0.72rem; color: #70747b; margin-top: -4px; margin-bottom: 6px;">3–15 characters: letters, numbers, and underscores only</small>
+        <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="15" pattern="[A-Za-z0-9_]{3,15}" placeholder="Username (3–15 characters)" required>
 
         <label for="signup-password">Password</label>
-        <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Create a password" required>
-        <small class="form-text" style="font-size: 0.72rem; color: #70747b; margin-top: -4px; margin-bottom: 6px;">At least 8 characters with both letters and numbers</small>
+        <div class="password-field-wrapper">
+          <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Password (min. 8 chars, letters & numbers)" required>
+          <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility" tabindex="-1">
+            <svg class="eye-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg class="eye-icon-closed" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
 
         <label for="signup-picture">Profile picture <span>(optional)</span></label>
         <input id="signup-picture" name="profile-picture" type="file" accept="image/*">

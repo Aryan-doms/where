@@ -89,7 +89,9 @@ document.addEventListener("where:layout-ready", async () => {
     setText("cafe-name", cafe.name);
     setText("cafe-cuisine-summary", cafe.niche);
     setText("cafe-cuisines-list", cafe.cuisine || "");
-    setText("cafe-price", (cafe.price || "").replace(/\s+for two people \(approx\.\)/i, ""));
+    const priceNum = Math.round(Number(cafe.price_for_two || 0));
+    const displayPrice = priceNum > 0 ? `₹${priceNum.toLocaleString("en-IN")}` : (cafe.price || "").replace(/^\?/, "₹").replace(/\s+for two people \(approx\.\)/i, "");
+    setText("cafe-price", displayPrice);
 
     const ratingBadge = document.getElementById("cafe-rating-badge");
     const ratingDot = document.getElementById("cafe-rating-dot");

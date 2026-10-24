@@ -44,6 +44,14 @@ function slugify(text) {
     .replace(/^-+|-+$/g, "");
 }
 
+function updatePricePreview(val) {
+  const num = parseInt(val, 10);
+  const preview = document.querySelector("#field-price-preview");
+  if (preview) {
+    preview.textContent = num > 0 ? `₹${num.toLocaleString("en-IN")} for two` : "—";
+  }
+}
+
 function showToast(message, type = "success") {
   const container = document.querySelector("#toast-container");
   if (!container) return;
@@ -310,7 +318,7 @@ function renderCafesTable() {
           </div>
         </td>
         <td>
-          <span class="cell-price">₹${Number(cafe.price_for_two || 0)}</span>
+          <span class="cell-price">₹${Math.round(Number(cafe.price_for_two || 0)).toLocaleString("en-IN")}</span>
         </td>
         <td>
           <span class="cell-area-badge" style="font-weight: 500;">📷 ${photoCount}</span>
@@ -678,8 +686,9 @@ function openCafeEditor(cafeId = null) {
   document.querySelector("#field-slug").value = cafe?.slug || (cafe ? slugify(cafe.name) : "");
   document.querySelector("#field-area").value = cafe?.area_id || "";
   document.querySelector("#field-niche").value = cafe?.niche || "";
-  document.querySelector("#field-price-num").value = cafe?.price_for_two || "";
-  document.querySelector("#field-price-text").value = cafe?.price || "";
+  const priceVal = cafe?.price_for_two ? Math.round(Number(cafe.price_for_two)) : "";
+  document.querySelector("#field-price-num").value = priceVal;
+  updatePricePreview(priceVal);
   document.querySelector("#field-address").value = cafe?.address || cafe?.location || "";
   document.querySelector("#field-contact").value = cafe?.contact || "";
   document.querySelector("#field-maps").value = cafe?.maps_url || "";
@@ -1342,6 +1351,11 @@ document.addEventListener("DOMContentLoaded", () => {
   areaSelect.addEventListener("change", updateUrlPreviewBar);
   document.querySelector("#editor-status-select").addEventListener("change", updateEditorStatusDot);
 
+  const priceNumInput = document.querySelector("#field-price-num");
+  priceNumInput?.addEventListener("input", () => {
+    updatePricePreview(priceNumInput.value);
+  });
+
   // Cuisines Tag Input Listeners
   const cuisineInput = document.querySelector("#input-new-cuisine");
   cuisineInput.addEventListener("keydown", (e) => {
@@ -1587,8 +1601,7 @@ document.addEventListener("DOMContentLoaded", () => {
       niche_type: niche,
       cuisines: state.editorCuisines,
       cuisine_source: state.editorCuisines.join(", "),
-      price_for_two: document.querySelector("#field-price-num").value,
-      price_range: document.querySelector("#field-price-text").value,
+      price_for_two: parseInt(document.querySelector("#field-price-num").value, 10) || 0,
       contact: document.querySelector("#field-contact").value,
       maps_url: document.querySelector("#field-maps").value,
       address,

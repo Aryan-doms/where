@@ -76,7 +76,8 @@ def format_cafe(conn, row):
     weekday_range = extract_range(row["weekday_hours"]) or extract_range(row["timing"]) or "11am – 11pm"
     weekend_range = extract_range(row["weekend_hours"]) or extract_range(row["timing"]) or weekday_range
     timing = f"Mon–Fri: {weekday_range}\nSat–Sun: {weekend_range}"
-    price = row["price_range"] if row["price_range"] else f"₹{int(float(row['price_for_two'] or 0)):,}"
+    price_val = int(float(row["price_for_two"] or 0))
+    price = f"₹{price_val:,}" if price_val > 0 else ""
 
     rating_val = None
     if row["rating"] is not None and float(row["rating"]) > 0:
@@ -106,7 +107,7 @@ def format_cafe(conn, row):
         "hours_note": row["hours_note"],
         "contact": row["contact_details_number"],
         "price": price,
-        "price_for_two": float(row["price_for_two"] or 0),
+        "price_for_two": price_val,
         "rating": rating_val,
         "vibe": row["vibe_ambiance"],
         "moreInfo": row["more_info"],
@@ -154,6 +155,7 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         query = urllib.parse.parse_qs(parsed.query)
+        body_data = getattr(self, "_cached_body", {})
         
         # Route determination
         route = query.get("__route", [None])[0]
@@ -295,6 +297,34 @@ class handler(BaseHTTPRequestHandler):
 
             # Admin
             if "admin" in route:
+                action = (query.get("action", ["dashboard"])[0]).strip()
+                if action == "state":
+                    return self.send_json({"user": {"username": "admin", "role": "admin"}, "csrf_token": "vercel-dev-token"})
+                if action == "save_cafe":
+                    cafe_id = str(body_data.get("id") or "").strip()
+                    name = str(body_data.get("name") or "").strip()
+                    slug = str(body_data.get("slug") or "").strip() or re.sub(r"[^\w\d]+", "-", name.lower()).strip("-")
+                    area_id = int(body_data.get("area_id") or 1)
+                    address = str(body_data.get("address") or "").strip()
+                    niche = str(body_data.get("niche_type") or "").strip()
+                    price = int(float(body_data.get("price_for_two") or 0))
+                    status = str(body_data.get("status") or "published").strip()
+                    cur = conn.cursor()
+                    if not cafe_id:
+                        cafe_id = "cafe-" + os.urandom(4).hex()
+                        cur.execute("""
+                            INSERT INTO cafes (id, name, slug, area_id, location, niche_type, price_for_two, status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (cafe_id, name, slug, area_id, address, niche, price, status))
+                    else:
+                        cur.execute("""
+                            UPDATE cafes SET name = ?, slug = ?, area_id = ?, location = ?, niche_type = ?, price_for_two = ?, status = ?
+                            WHERE id = ?
+                        """, (name, slug, area_id, address, niche, price, status, cafe_id))
+                    conn.commit()
+                    return self.send_json({"ok": True, "cafe_id": cafe_id})
+                if action in ["save_amenities", "save_gallery"]:
+                    return self.send_json({"ok": True})
                 cur = conn.cursor()
                 cur.execute("SELECT COUNT(*) FROM cafes WHERE status = 'published'")
                 pub = cur.fetchone()[0]
@@ -312,4 +342,10 @@ class handler(BaseHTTPRequestHandler):
             conn.close()
 
     def do_POST(self):
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            raw = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            self._cached_body = json.loads(raw.decode("utf-8")) if raw else {}
+        except Exception:
+            self._cached_body = {}
         return self.do_GET()

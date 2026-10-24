@@ -111,22 +111,28 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
 .pill-link--light:hover { background: #f6ecdc; }
 
 .auth-page { min-height: 100svh; background: var(--paper); }
-.auth-layout { display: grid; min-height: 100svh; place-items: center; padding: 120px 5% 60px; }
+.auth-layout { display: grid; min-height: 100svh; place-items: center; align-content: center; padding: clamp(70px, 8vh, 90px) 5% 30px; box-sizing: border-box; }
 .auth-layout:has(.profile-card) { grid-template-columns: minmax(0, 520px) minmax(260px, 360px); align-content: center; justify-content: center; align-items: start; gap: clamp(45px, 8vw, 120px); }
-.auth-card, .profile-card { width: min(460px, 100%); }
-.auth-card h1, .profile-card h1 { margin: 0; font-family: var(--serif); font-size: clamp(3.6rem, 9vw, 6.5rem); font-weight: 500; letter-spacing: -.08em; line-height: .85; }
-.auth-intro { margin: 22px 0 34px; color: var(--muted); font-size: .9rem; }
-.auth-form, .profile-form { display: grid; gap: 10px; }
-.auth-form label, .profile-form label { margin-top: 10px; font-size: .72rem; font-weight: 700; }
+.auth-card, .profile-card { width: min(440px, 100%); }
+.auth-card h1 { margin: 0 0 18px; font-family: var(--serif); font-size: clamp(2.4rem, 4.2vw, 3.4rem); font-weight: 500; letter-spacing: -.06em; line-height: .95; }
+.auth-card .eyebrow { margin: 0 0 6px; }
+.auth-intro { margin: 6px 0 16px; color: var(--muted); font-size: .86rem; line-height: 1.35; }
+.auth-form, .profile-form { display: grid; gap: 6px; }
+.auth-form label, .profile-form label { margin-top: 4px; font-size: .7rem; font-weight: 700; }
 .auth-form label span { color: var(--muted); font-weight: 400; }
-.auth-form input, .profile-form input { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #171b2538; border-radius: 2px; color: var(--ink); background: #fff; font: inherit; }
-.auth-form input[type="file"], .profile-form input[type="file"] { padding: 13px 10px; font-size: .72rem; }
+.auth-form input, .profile-form input { width: 100%; min-height: 42px; padding: 0 14px; border: 1px solid #171b2538; border-radius: 6px; color: var(--ink); background: #fff; font: inherit; font-size: .86rem; }
+.password-field-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+.password-field-wrapper input { width: 100%; padding-right: 44px !important; }
+.password-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; padding: 4px; background: transparent; border: none; cursor: pointer; color: #70747b; transition: color 0.15s ease; z-index: 2; }
+.password-toggle-btn:hover { color: var(--ink); }
+.password-toggle-btn svg { width: 20px; height: 20px; display: block; }
+.auth-form input[type="file"], .profile-form input[type="file"] { min-height: 38px; padding: 8px 10px; font-size: .72rem; }
 .auth-form input:focus, .profile-form input:focus { border-color: var(--ink); outline: 2px solid #171b2538; outline-offset: 2px; }
-.auth-submit { min-height: 48px; margin-top: 18px; border: 1px solid var(--ink); border-radius: 99px; color: #fff; background: var(--ink); font-weight: 700; cursor: pointer; transition: transform .2s ease, background-color .2s ease; }
+.auth-submit { min-height: 44px; margin-top: 12px; border: 1px solid var(--ink); border-radius: 99px; color: #fff; background: var(--ink); font-weight: 700; cursor: pointer; transition: transform .2s ease, background-color .2s ease; }
 .auth-submit:hover { background: #36343b; transform: translateY(-2px); }
-.auth-message { min-height: 1.4em; margin: 18px 0 0; color: #a34e43; font-size: .76rem; }
+.auth-message { min-height: 1.2em; margin: 8px 0 0; color: #a34e43; font-size: .76rem; }
 .auth-message--success { color: #52745a; }
-.auth-switch { margin-top: 28px; color: var(--muted); font-size: .78rem; }
+.auth-switch { margin-top: 14px; color: var(--muted); font-size: .76rem; }
 .auth-switch a { color: var(--ink); border-bottom: 1px solid currentColor; font-weight: 700; }
 .profile-card { width: min(520px, 100%); padding: clamp(26px, 6vw, 52px); background: #fff; box-shadow: 0 20px 50px #171b2512; }
 .profile-topline { display: flex; align-items: start; justify-content: space-between; gap: 20px; }

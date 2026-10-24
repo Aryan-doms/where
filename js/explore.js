@@ -17,7 +17,8 @@ function fixedTiming(timing) {
 
 function cafeCard(cafe) {
   const saved = window.WhereUser.hasFavorite(cafe.id);
-  const cleanPrice = escapeExploreHtml(cafe.price.replace(" for two people (approx.)", "").replace(" for two", ""));
+  const priceNum = Math.round(Number(cafe.price_for_two || 0));
+  const cleanPrice = priceNum > 0 ? `₹${priceNum.toLocaleString("en-IN")}` : escapeExploreHtml((cafe.price || "").replace(/^\?/, "₹").replace(" for two people (approx.)", "").replace(" for two", ""));
   const timing = cafe.timing || "";
   const numRating = Number(cafe.rating) || 0;
   let ratingTier = "low";

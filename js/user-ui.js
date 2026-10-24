@@ -86,8 +86,15 @@ window.WhereUser = {
     return result.saved;
   },
   saveProfileImage(username, image) {
-    localStorage.setItem(`${WHERE_PROFILE_IMAGE_PREFIX}${username}`, image);
-    whereRenderAccountNav();
+    try {
+      localStorage.setItem(`${WHERE_PROFILE_IMAGE_PREFIX}${username}`, image);
+      whereRenderAccountNav();
+    } catch (e) {
+      if (e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014)) {
+        throw new Error("This picture exceeds available browser storage space. Please try a different photo.");
+      }
+      throw e;
+    }
   },
   renderAccountNav: whereRenderAccountNav
 };

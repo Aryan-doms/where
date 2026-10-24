@@ -134,12 +134,14 @@ function whereUploadImage(PDO $pdo, array $data): array
         $hasCoverStmt->execute([$cafeId]);
         $hasCover = (bool) $hasCoverStmt->fetchColumn();
 
-        $linkStmt = $pdo->prepare(
-            'INSERT INTO cafe_images (cafe_id, image_id, alt_text, sort_order, is_cover)
-             VALUES (?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE alt_text = VALUES(alt_text)'
-        );
-        $linkStmt->execute([$cafeId, $imageId, $restaurantName, $nextOrder, $hasCover ? 0 : 1]);
+        $chkCI = $pdo->prepare('SELECT 1 FROM cafe_images WHERE cafe_id = ? AND image_id = ?');
+        $chkCI->execute([$cafeId, $imageId]);
+        if ($chkCI->fetchColumn()) {
+            $pdo->prepare('UPDATE cafe_images SET alt_text = ? WHERE cafe_id = ? AND image_id = ?')->execute([$restaurantName, $cafeId, $imageId]);
+        } else {
+            $pdo->prepare('INSERT INTO cafe_images (cafe_id, image_id, alt_text, sort_order, is_cover) VALUES (?, ?, ?, ?, ?)')
+                ->execute([$cafeId, $imageId, $restaurantName, $nextOrder, $hasCover ? 0 : 1]);
+        }
     }
 
     return [
@@ -253,11 +255,10 @@ function whereSaveCafe(PDO $pdo, array $data): string
     $weekendHours = whereAdminString($data, 'weekend_hours', 255);
     $hoursNote = whereAdminString($data, 'hours_note', 20000);
     $contact = whereAdminString($data, 'contact', 100);
-    $priceRange = whereAdminString($data, 'price_range', 100);
     $priceValue = trim((string) ($data['price_for_two'] ?? ''));
-    $price = $priceValue === '' ? 0.0 : filter_var($priceValue, FILTER_VALIDATE_FLOAT);
+    $price = $priceValue === '' ? 0 : filter_var($priceValue, FILTER_VALIDATE_INT);
     if ($price === false || $price < 0) {
-        whereJson(['error' => 'Price for two must be a non-negative number.'], 422);
+        whereJson(['error' => 'Price for two must be a non-negative whole number.'], 422);
     }
     $mapsUrl = whereAdminString($data, 'maps_url', 500);
     $status = in_array($data['status'] ?? '', ['draft', 'published', 'archived'], true)
@@ -277,25 +278,25 @@ function whereSaveCafe(PDO $pdo, array $data): string
                 'INSERT INTO cafes
                  (id, name, slug, area_id, location, cuisine_source, niche_type, timing,
                   weekday_hours, weekend_hours, hours_note, contact_details_number,
-                  price_range, price_for_two, vibe_ambiance, more_info, maps_url, status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                  price_for_two, vibe_ambiance, more_info, maps_url, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $statement->execute([
                 $id, $name, $slug, $areaId, $address, $cuisineSource, $niche, $timing,
-                $weekdayHours, $weekendHours, $hoursNote, $contact, $priceRange,
+                $weekdayHours, $weekendHours, $hoursNote, $contact,
                 $price, $vibe, $moreInfo, $mapsUrl, $status
             ]);
         } else {
             $statement = $pdo->prepare(
                 'UPDATE cafes SET name = ?, slug = ?, area_id = ?, location = ?, cuisine_source = ?,
                  niche_type = ?, timing = ?, weekday_hours = ?, weekend_hours = ?,
-                 hours_note = ?, contact_details_number = ?, price_range = ?, price_for_two = ?,
+                 hours_note = ?, contact_details_number = ?, price_for_two = ?,
                  vibe_ambiance = ?, more_info = ?, maps_url = ?, status = ?
                  WHERE id = ?'
             );
             $statement->execute([
                 $name, $slug, $areaId, $address, $cuisineSource, $niche, $timing,
-                $weekdayHours, $weekendHours, $hoursNote, $contact, $priceRange,
+                $weekdayHours, $weekendHours, $hoursNote, $contact,
                 $price, $vibe, $moreInfo, $mapsUrl, $status, $id
             ]);
             if ($statement->rowCount() === 0) {
@@ -308,18 +309,23 @@ function whereSaveCafe(PDO $pdo, array $data): string
         }
 
         $pdo->prepare('DELETE FROM cafe_cuisines WHERE cafe_id = ?')->execute([$id]);
-        $insertCuisine = $pdo->prepare(
-            'INSERT INTO cuisines (name) VALUES (?) ON DUPLICATE KEY UPDATE name = VALUES(name)'
-        );
         $findCuisine = $pdo->prepare('SELECT cuisine_id FROM cuisines WHERE name = ?');
-        $linkCuisine = $pdo->prepare('INSERT IGNORE INTO cafe_cuisines (cafe_id, cuisine_id) VALUES (?, ?)');
+        $insertCuisine = $pdo->prepare('INSERT INTO cuisines (name) VALUES (?)');
+        $linkCuisine = $pdo->prepare('INSERT INTO cafe_cuisines (cafe_id, cuisine_id) VALUES (?, ?)');
         foreach ($cuisines as $cuisine) {
             if (whereTextLength($cuisine) > 120) {
                 throw new RuntimeException('Cuisine names must be 120 characters or fewer.');
             }
-            $insertCuisine->execute([$cuisine]);
             $findCuisine->execute([$cuisine]);
-            $linkCuisine->execute([$id, $findCuisine->fetchColumn()]);
+            $cuisineId = $findCuisine->fetchColumn();
+            if (!$cuisineId) {
+                $insertCuisine->execute([$cuisine]);
+                $findCuisine->execute([$cuisine]);
+                $cuisineId = $findCuisine->fetchColumn();
+            }
+            if ($cuisineId) {
+                $linkCuisine->execute([$id, $cuisineId]);
+            }
         }
 
         $pdo->commit();
@@ -356,14 +362,22 @@ function whereSaveCafeAmenities(PDO $pdo, array $data): void
             if (whereTextLength($name) > 100 || $key === '' || strlen($key) > 64) {
                 whereJson(['error' => 'Amenity names must be 1-100 characters and contain at least one letter or number.'], 422);
             }
-            $pdo->prepare(
-                'INSERT INTO amenities (amenity_key, display_name) VALUES (?, ?)
-                 ON DUPLICATE KEY UPDATE display_name = VALUES(display_name)'
-            )->execute([$key, $name]);
-            $pdo->prepare(
-                'INSERT INTO cafe_amenities (cafe_id, amenity_key, is_available) VALUES (?, ?, ?)
-                 ON DUPLICATE KEY UPDATE is_available = VALUES(is_available)'
-            )->execute([$cafeId, $key, !empty($amenity['available']) ? 1 : 0]);
+            $chkAm = $pdo->prepare('SELECT 1 FROM amenities WHERE amenity_key = ?');
+            $chkAm->execute([$key]);
+            if ($chkAm->fetchColumn()) {
+                $pdo->prepare('UPDATE amenities SET display_name = ? WHERE amenity_key = ?')->execute([$name, $key]);
+            } else {
+                $pdo->prepare('INSERT INTO amenities (amenity_key, display_name) VALUES (?, ?)')->execute([$key, $name]);
+            }
+
+            $availVal = !empty($amenity['available']) ? 1 : 0;
+            $chkCA = $pdo->prepare('SELECT 1 FROM cafe_amenities WHERE cafe_id = ? AND amenity_key = ?');
+            $chkCA->execute([$cafeId, $key]);
+            if ($chkCA->fetchColumn()) {
+                $pdo->prepare('UPDATE cafe_amenities SET is_available = ? WHERE cafe_id = ? AND amenity_key = ?')->execute([$availVal, $cafeId, $key]);
+            } else {
+                $pdo->prepare('INSERT INTO cafe_amenities (cafe_id, amenity_key, is_available) VALUES (?, ?, ?)')->execute([$cafeId, $key, $availVal]);
+            }
         }
         $pdo->commit();
     } catch (Throwable $error) {
@@ -419,30 +433,36 @@ function whereSaveHomepage(PDO $pdo, array $data): void
     $sections = is_array($data['sections'] ?? null) ? $data['sections'] : [];
     $pdo->beginTransaction();
     try {
-        $saveSection = $pdo->prepare(
+        $chkSec = $pdo->prepare('SELECT 1 FROM homepage_sections WHERE section_key = ?');
+        $updSec = $pdo->prepare(
+            'UPDATE homepage_sections
+                SET title = ?, body = ?, media_path = ?, link_label = ?, link_url = ?, sort_order = ?, is_published = ?
+              WHERE section_key = ?'
+        );
+        $insSec = $pdo->prepare(
             'INSERT INTO homepage_sections
              (section_key, title, body, media_path, link_label, link_url, sort_order, is_published)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE title = VALUES(title), body = VALUES(body),
-             media_path = VALUES(media_path), link_label = VALUES(link_label),
-             link_url = VALUES(link_url), sort_order = VALUES(sort_order),
-             is_published = VALUES(is_published)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         );
         foreach ($sections as $index => $section) {
             $key = (string) ($section['section_key'] ?? '');
             if (!in_array($key, ['hero', 'poster'], true)) {
                 continue;
             }
-            $saveSection->execute([
-                $key,
-                whereTextSlice(trim((string) ($section['title'] ?? '')), 255),
-                trim((string) ($section['body'] ?? '')),
-                whereTextSlice(trim((string) ($section['media_path'] ?? '')), 500),
-                whereTextSlice(trim((string) ($section['link_label'] ?? '')), 100),
-                whereTextSlice(trim((string) ($section['link_url'] ?? '')), 500),
-                $index + 1,
-                !empty($section['is_published']) ? 1 : 0
-            ]);
+            $t = whereTextSlice(trim((string) ($section['title'] ?? '')), 255);
+            $b = trim((string) ($section['body'] ?? ''));
+            $m = whereTextSlice(trim((string) ($section['media_path'] ?? '')), 500);
+            $l = whereTextSlice(trim((string) ($section['link_label'] ?? '')), 100);
+            $u = whereTextSlice(trim((string) ($section['link_url'] ?? '')), 500);
+            $s = $index + 1;
+            $p = !empty($section['is_published']) ? 1 : 0;
+
+            $chkSec->execute([$key]);
+            if ($chkSec->fetchColumn()) {
+                $updSec->execute([$t, $b, $m, $l, $u, $s, $p, $key]);
+            } else {
+                $insSec->execute([$key, $t, $b, $m, $l, $u, $s, $p]);
+            }
         }
 
         $ids = array_values(array_unique(array_map('strval', $data['featured'] ?? [])));
@@ -609,15 +629,19 @@ try {
             if (!filter_var($url, FILTER_VALIDATE_URL)) {
                 whereJson(['error' => 'Please provide a valid image URL (http/https).'], 422);
             }
-            $insert = $pdo->prepare(
-                'INSERT INTO image_catalog (restaurant_name, image_url, source_status)
-                 VALUES (?, ?, "admin_added")
-                 ON DUPLICATE KEY UPDATE restaurant_name = VALUES(restaurant_name)'
-            );
-            $insert->execute([$restaurant, $url]);
             $find = $pdo->prepare('SELECT image_id, restaurant_name, image_url FROM image_catalog WHERE image_url = ?');
             $find->execute([$url]);
-            $image = $find->fetch();
+            $existing = $find->fetch();
+            if ($existing) {
+                $pdo->prepare('UPDATE image_catalog SET restaurant_name = ? WHERE image_id = ?')->execute([$restaurant, $existing['image_id']]);
+                $find->execute([$url]);
+                $image = $find->fetch();
+            } else {
+                $pdo->prepare('INSERT INTO image_catalog (restaurant_name, image_url, source_status) VALUES (?, ?, "admin_added")')
+                    ->execute([$restaurant, $url]);
+                $find->execute([$url]);
+                $image = $find->fetch();
+            }
             whereJson(['ok' => true, 'image' => $image]);
         case 'archive_cafe':
             $id = (string) ($data['cafe_id'] ?? '');
