@@ -22,9 +22,19 @@ if ! docker info > /dev/null 2>&1; then
   fi
 fi
 
-# 2. Check if PHP is installed
-if ! command -v php > /dev/null 2>&1; then
-  echo "⚠️ PHP is not installed. Please run: brew install php"
+# 2. Find PHP on PATH or in a common XAMPP installation
+PHP_BIN="$(command -v php || true)"
+if [ -z "$PHP_BIN" ]; then
+  for candidate in /Applications/XAMPP/xamppfiles/bin/php /Applications/XAMPP/bin/php; do
+    if [ -x "$candidate" ]; then
+      PHP_BIN="$candidate"
+      break
+    fi
+  done
+fi
+
+if [ -z "$PHP_BIN" ]; then
+  echo "⚠️ PHP is not installed or could not be found. Install PHP or add its binary to PATH."
   exit 1
 fi
 
@@ -68,4 +78,4 @@ if command -v open > /dev/null 2>&1; then
   (sleep 1 && open "http://localhost:8000") &
 fi
 
-php -S localhost:8000 router.php
+"$PHP_BIN" -S localhost:8000 router.php
