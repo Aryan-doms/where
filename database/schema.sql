@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS cafes (
   weekend_hours VARCHAR(255) NULL,
   hours_note TEXT NULL,
   contact_details_number VARCHAR(100) NOT NULL DEFAULT '',
+  price_range VARCHAR(100) NOT NULL DEFAULT '',
   price_for_two INT UNSIGNED NOT NULL DEFAULT 0,
   vibe_ambiance TEXT NOT NULL,
   more_info TEXT NOT NULL,
