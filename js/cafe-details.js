@@ -77,17 +77,16 @@ document.addEventListener("where:layout-ready", async () => {
   }
 
   function renderCafe(cafe, allCafes) {
-    const cleanName = (cafe.name || "").replace(/\ufffd/g, "'");
-    document.title = `${cleanName} — WHERE?`;
+    document.title = `${cafe.name} — WHERE?`;
     document.querySelectorAll(".cafe-detail-main > section").forEach((section) => {
       section.hidden = false;
     });
     const breadcrumbArea = document.getElementById("breadcrumb-area");
     if (breadcrumbArea) {
-      breadcrumbArea.innerHTML = `<a href="/surat/${encodeURIComponent(cafe.area_slug || '')}">${escapeHtml((cafe.area || '').toUpperCase())}</a>`;
+      breadcrumbArea.innerHTML = `<a href="/surat/${encodeURIComponent(cafe.area_slug || '')}">${escapeHtml(cafe.area.toUpperCase())}</a>`;
     }
-    setText("breadcrumb-id", cleanName.toUpperCase());
-    setText("cafe-name", cleanName);
+    setText("breadcrumb-id", cafe.name.toUpperCase());
+    setText("cafe-name", cafe.name);
     setText("cafe-cuisine-summary", cafe.niche);
     setText("cafe-cuisines-list", cafe.cuisine || "");
     const priceNum = Math.round(Number(cafe.price_for_two || 0));
