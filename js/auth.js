@@ -17,9 +17,40 @@ document.addEventListener("where:layout-ready", async () => {
 
   async function submitAccountForm(event, action) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton ? submitButton.textContent : "Submit";
+
+    showAuthMessage("");
+
+    if (action === "signup") {
+      const phone = String(formData.get("phone") || "").trim();
+      const username = String(formData.get("username") || "").trim();
+      const password = String(formData.get("password") || "");
+
+      if (!/^\d{10}$/.test(phone)) {
+        showAuthMessage("Phone number must be exactly 10 digits (digits 0-9 only).");
+        form.querySelector("#signup-phone")?.focus();
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+        showAuthMessage("Username must be 3–20 characters: letters, numbers, and underscores only.");
+        form.querySelector("#signup-username")?.focus();
+        return;
+      }
+      if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+        showAuthMessage("Password must be at least 8 characters long and contain both letters and numbers.");
+        form.querySelector("#signup-password")?.focus();
+        return;
+      }
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = action === "signup" ? "Creating account..." : "Signing in...";
+    }
+
     try {
       await window.WhereUser.ready;
       const result = await window.WhereUser.request(action, {
@@ -27,18 +58,23 @@ document.addEventListener("where:layout-ready", async () => {
         phone: String(formData.get("phone") || "").trim(),
         password: String(formData.get("password") || "")
       });
-      await window.WhereUser.refresh();
       if (action === "signup") {
         const picture = formData.get("profile-picture");
         if (picture && picture.size) {
-          window.WhereUser.saveProfileImage(result.user?.username || window.WhereUser.current().username, await readImage(picture));
+          try {
+            window.WhereUser.saveProfileImage(result.user?.username || String(formData.get("username")), await readImage(picture));
+          } catch (e) {
+            console.warn("Could not save profile image locally", e);
+          }
         }
       }
       window.location.href = "profile.html";
     } catch (error) {
       showAuthMessage(error.message);
-    } finally {
-      submitButton.disabled = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
     }
   }
 
@@ -126,6 +162,18 @@ document.addEventListener("where:layout-ready", async () => {
   const login = document.querySelector("#login-form");
   signup?.addEventListener("submit", (event) => submitAccountForm(event, "signup"));
   login?.addEventListener("submit", (event) => submitAccountForm(event, "login"));
+
+  // Real-time phone number sanitization (only 0-9 allowed, max 10 digits)
+  const phoneInput = document.querySelector("#signup-phone");
+  phoneInput?.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    showAuthMessage("");
+  });
+
+  const usernameInput = document.querySelector("#signup-username");
+  usernameInput?.addEventListener("input", () => {
+    showAuthMessage("");
+  });
 
   try {
     await window.WhereUser.ready;

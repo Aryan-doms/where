@@ -30,15 +30,31 @@ try {
         $username = strtolower(trim((string) ($data['username'] ?? '')));
         $phone = trim((string) ($data['phone'] ?? ''));
         $password = (string) ($data['password'] ?? '');
-        if (!preg_match('/^[a-z0-9_]{3,50}$/', $username)) {
-            whereJson(['error' => 'Username must be 3-50 characters: letters, numbers, or underscore.'], 422);
+
+        // Validation for username, phone and password
+        if (!preg_match('/^[a-z0-9_]{3,20}$/', $username)) {
+            whereJson(['error' => 'Username must be 3-20 characters: letters, numbers, and underscores only.'], 422);
         }
         if (!preg_match('/^\d{10}$/', $phone)) {
-            whereJson(['error' => 'Enter exactly 10 digits without a country code.'], 422);
+            whereJson(['error' => 'Phone number must be exactly 10 digits (0-9).'], 422);
         }
-        if (strlen($password) < 8) {
-            whereJson(['error' => 'Password must be at least 8 characters.'], 422);
+        if (strlen($password) < 8 || !preg_match('/[a-zA-Z]/', $password) || !preg_match('/\d/', $password)) {
+            whereJson(['error' => 'Password must be at least 8 characters and contain both letters and numbers.'], 422);
         }
+
+        // Distinct duplicate checks with clear error messages
+        $checkUser = $pdo->prepare('SELECT 1 FROM users WHERE username = ?');
+        $checkUser->execute([$username]);
+        if ($checkUser->fetchColumn()) {
+            whereJson(['error' => 'This username is already taken. Please choose another username.'], 409);
+        }
+
+        $checkPhone = $pdo->prepare('SELECT 1 FROM users WHERE phone_number = ?');
+        $checkPhone->execute([$phone]);
+        if ($checkPhone->fetchColumn()) {
+            whereJson(['error' => 'This phone number is already registered. Please log in or use another number.'], 409);
+        }
+
         try {
             $statement = $pdo->prepare(
                 'INSERT INTO users (username, phone_number, password_hash) VALUES (?, ?, ?)'
@@ -50,12 +66,22 @@ try {
             }
             throw $error;
         }
+
+        $newUserId = (int) $pdo->lastInsertId();
         whereCreateSession([
-            'user_id' => $pdo->lastInsertId(),
+            'user_id' => $newUserId,
             'username' => $username,
             'role' => 'user'
         ]);
-        whereJson(['user' => whereCurrentUser(), 'csrf_token' => whereCsrfToken()]);
+        whereJson([
+            'user' => [
+                'user_id' => $newUserId,
+                'username' => $username,
+                'phone' => $phone,
+                'role' => 'user'
+            ],
+            'csrf_token' => whereCsrfToken()
+        ]);
     }
 
     if ($method === 'POST' && $action === 'login') {
