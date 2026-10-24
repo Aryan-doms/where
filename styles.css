@@ -71,8 +71,8 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
 .about-story { position: relative; display: flex; min-height: 100svh; box-sizing: border-box; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: clamp(65px, 9vh, 90px) 5% clamp(25px, 4vh, 45px); text-align: center; background: #000; }
 .about-kicker { margin: 0 0 clamp(6px, 1vh, 10px); color: #ffffffb8; font-size: .68rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .about-story h1 { margin: 0; font-family: var(--serif); font-size: clamp(3.2rem, 5.5vw, 5.4rem); font-weight: 500; letter-spacing: -.07em; line-height: .88; }
-.about-copy { width: min(650px, 92%); margin: clamp(16px, 2.4vh, 26px) auto clamp(18px, 2.8vh, 30px); font-size: clamp(0.92rem, 1.05vw, 1.05rem); letter-spacing: -.01em; line-height: 1.48; color: #ececec; }
-.about-copy p { margin: 0 0 clamp(8px, 1.2vh, 13px); }
+.about-copy { width: min(680px, 92%); margin: clamp(14px, 2.2vh, 22px) auto clamp(16px, 2.5vh, 26px); font-size: clamp(0.9rem, 1vw, 1.02rem); letter-spacing: -.01em; line-height: 1.45; color: #ececec; }
+.about-copy p { margin: 0 0 clamp(6px, 1vh, 10px); }
 .about-copy p:last-child { margin-bottom: 0; }
 .about-story .pill-link { position: relative; z-index: 2; color: #111; border: 0; background: #fff; }
 .about-globe { display: block; width: clamp(56px, 7vh, 80px); height: clamp(56px, 7vh, 80px); margin: 0 auto clamp(10px, 1.6vh, 18px); object-fit: contain; }
