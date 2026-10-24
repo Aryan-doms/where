@@ -165,7 +165,7 @@ async function setupExplore() {
     filterCount.hidden = total === 0;
   }
 
-  // Price range readable labels
+  // Price range labels
   const priceLabels = {
     "under-600": "Under ₹600",
     "600-1000": "₹600–₹1,000",
@@ -173,7 +173,7 @@ async function setupExplore() {
     "above-1500": "Above ₹1,500"
   };
 
-  // 1. Calculate top 5 areas with most cafes (dynamic)
+  // 1. Calculate top 5 areas with most cafes 
   const areaCounts = {};
   cafes.forEach((c) => {
     if (c.area) {
@@ -184,7 +184,7 @@ async function setupExplore() {
     .sort((a, b) => areaCounts[b] - areaCounts[a])
     .slice(0, 5);
 
-  // 2. Calculate top 3 niches with most cafes (dynamic)
+  // 2. Calculate top 3 niches with most cafes 
   const nicheCounts = {};
   cafes.forEach((c) => {
     const n = c.niche || c.niche_type;
@@ -291,14 +291,14 @@ async function setupExplore() {
       }
     }
 
-    // 3. Render quick filters row (single horizontal row)
+    // 3.  quick filters row
     const standardKeys = new Set([
       ...top5Areas.map((a) => `area:${a.toLowerCase()}`),
       ...top3Niches.map((n) => `niche:${n.toLowerCase()}`),
       "rating:4.0"
     ]);
 
-    // Extra selections from modal dialog (e.g. cuisines, prices, other areas/niches/ratings)
+    // Extra selections from modal dialog 
     const extraSelections = currentSelections.filter((sel) => {
       const key = `${sel.type}:${sel.val.toLowerCase()}`;
       return !standardKeys.has(key);
