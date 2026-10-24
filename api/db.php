@@ -15,18 +15,30 @@ function whereDb(): PDO
     $username = getenv('WHERE_DB_USER') ?: ($config['username'] ?? 'where');
     $password = getenv('WHERE_DB_PASSWORD') ?: ($config['password'] ?? '');
 
-    $connection = new PDO(
-        "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4",
-        $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-
-    return $connection;
+    try {
+        $connection = new PDO(
+            "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4",
+            $username,
+            $password,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_TIMEOUT => 1
+            ]
+        );
+        return $connection;
+    } catch (Throwable $e) {
+        $sqlitePath = dirname(__DIR__) . '/database/where.db';
+        if (is_file($sqlitePath)) {
+            $connection = new PDO("sqlite:{$sqlitePath}", null, null, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+            return $connection;
+        }
+        throw $e;
+    }
 }
 
 function whereJson($value, int $status = 200): void

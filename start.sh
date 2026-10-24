@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 # Change directory to project root
@@ -6,76 +6,51 @@ cd "$(dirname "$0")"
 
 echo "☕ Starting WHERE?..."
 
-# 1. Check if Docker is running (on Mac, automatically launches Docker Desktop if closed)
-if ! docker info > /dev/null 2>&1; then
-  echo "==> Docker is not running."
-  if [ -d "/Applications/Docker.app" ]; then
-    echo "==> Launching Docker Desktop..."
-    open -a Docker
-    echo "==> Waiting for Docker engine to start..."
-    until docker info > /dev/null 2>&1; do
-      sleep 2
-    done
-  else
-    echo "⚠️ Docker is not running. Please launch Docker Desktop, then re-run this script."
-    exit 1
-  fi
-fi
-
-# 2. Find PHP on PATH or in a common XAMPP installation
-PHP_BIN="$(command -v php || true)"
-if [ -z "$PHP_BIN" ]; then
-  for candidate in /Applications/XAMPP/xamppfiles/bin/php /Applications/XAMPP/bin/php; do
-    if [ -x "$candidate" ]; then
-      PHP_BIN="$candidate"
-      break
-    fi
-  done
-fi
-
-if [ -z "$PHP_BIN" ]; then
-  echo "⚠️ PHP is not installed or could not be found. Install PHP or add its binary to PATH."
+# 1. Detect Python 3
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+if [ -z "$PYTHON_BIN" ]; then
+  echo "⚠️ Python 3 is required but could not be found. Please ensure Python 3 is installed."
   exit 1
 fi
 
-# 3. Ensure api/config.php exists
-if [ ! -f api/config.php ]; then
-  echo "==> Creating api/config.php from template..."
-  cp api/config.example.php api/config.php
+echo "==> Using Python: $($PYTHON_BIN --version)"
+
+# 2. Install requirements if pip is available
+if command -v pip3 > /dev/null 2>&1; then
+  echo "==> Checking dependencies from requirements.txt..."
+  pip3 install -r requirements.txt --quiet 2>/dev/null || true
+elif "$PYTHON_BIN" -m pip --version > /dev/null 2>&1; then
+  echo "==> Checking dependencies from requirements.txt..."
+  "$PYTHON_BIN" -m pip install -r requirements.txt --quiet 2>/dev/null || true
 fi
 
-# 4. Free port 8000 if an old PHP server is still running
+# 3. Verify built-in database exists
+if [ ! -f "database/where.db" ]; then
+  echo "==> Initializing built-in database from schema..."
+  if [ -f "database/sqlite_seed.sql" ]; then
+    sqlite3 database/where.db < database/sqlite_seed.sql
+  fi
+fi
+
+# 4. Free port 8000 if already in use
 EXISTING_PID=$(lsof -ti :8000 -sTCP:LISTEN 2>/dev/null || true)
 if [ -n "$EXISTING_PID" ]; then
-  echo "==> Freeing port 8000 (stopping previous server PID $EXISTING_PID)..."
+  echo "==> Freeing port 8000 (stopping previous process $EXISTING_PID)..."
   kill -9 $EXISTING_PID 2>/dev/null || true
   sleep 1
 fi
 
-# 5. Start MySQL Docker container
-echo "==> 1. Starting database container..."
-docker compose up -d
-
-# 6. Wait until MySQL is ready
-echo "==> 2. Waiting for MySQL to be ready..."
-RETRIES=30
-until docker exec where-mysql mysqladmin ping -h localhost -u root -pwhere_root_password --silent > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
-  sleep 1
-  RETRIES=$((RETRIES - 1))
-done
-
-# 7. Load seed database with all 128 cafes & photos
-echo "==> 3. Ensuring database is seeded with all 128 cafes & photos..."
-docker exec -i where-mysql mysql -uroot -pwhere_root_password cafecompass < database/seed.sql > /dev/null 2>&1 || true
-
-# 8. Start local PHP server and auto-open browser
-echo "==> 4. Server ready! Opening in your browser:"
-echo "     👉 http://localhost:8000"
-echo "     (Press Ctrl+C to stop the server)"
+echo "==> Database built-in (database/where.db) ready! 128 Surat cafes loaded."
+echo "==> Server ready at: http://localhost:8000"
+echo "    (Press Ctrl+C to stop)"
 echo ""
 
+# 5. Open browser automatically
 if command -v open > /dev/null 2>&1; then
   (sleep 1 && open "http://localhost:8000") &
+elif command -v xdg-open > /dev/null 2>&1; then
+  (sleep 1 && xdg-open "http://localhost:8000") &
 fi
 
-"$PHP_BIN" -S localhost:8000 router.php
+# 6. Run standalone server
+exec "$PYTHON_BIN" server.py

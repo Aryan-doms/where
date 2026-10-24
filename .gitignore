@@ -1,5 +1,10 @@
 .DS_Store
 /api/config.php
+/archive/
+/oep_submission/
+__pycache__/
+*.pyc
+.env
 
 # Local data-collection and CSV-generation files
 /build_csv.py
@@ -9,7 +14,5 @@
 /raw_candidates.json
 /surat_areas.csv
 /surat_cafes.csv
-/.env
-/assets/apple.gif
 /assets/apple.png
 /assets/star-doodle.jpg

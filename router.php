@@ -1,26 +1,44 @@
 <?php
 
 // Lightweight built-in server router for WHERE?
+// Supports clean folders (html/, css/, js/, assets/)
 // Run with: php -S localhost:8000 router.php
 
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-$file = __DIR__ . $uri;
 
-// 1. If a real static file or PHP script exists directly, let the built-in server handle it (except /cafe.html so we can redirect legacy query strings)
-if ($uri !== '/' && $uri !== '/cafe.html' && (is_file($file) || (is_dir($file) && is_file($file . '/index.html')))) {
+function whereLocate(string $rel): ?string {
+    $rel = ltrim($rel, '/');
+    $basename = basename($rel);
+    $candidates = [
+        __DIR__ . '/' . $rel,
+        __DIR__ . '/html/' . $rel,
+        __DIR__ . '/css/' . $rel,
+        __DIR__ . '/js/' . $rel,
+        __DIR__ . '/assets/' . $rel,
+        __DIR__ . '/html/' . $basename,
+        __DIR__ . '/css/' . $basename,
+        __DIR__ . '/js/' . $basename,
+        __DIR__ . '/assets/' . $basename,
+    ];
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+    }
+    return null;
+}
+
+// 1. If a real static file or PHP script exists directly, let built-in server handle it (except /cafe.html)
+$directFile = __DIR__ . $uri;
+if ($uri !== '/' && $uri !== '/cafe.html' && is_file($directFile)) {
     return false;
 }
 
-// 2. Prevent static asset subpaths (e.g. /surat/athwa/styles.css) from being captured as HTML routes
+// 2. Static asset handling (css, js, images, media)
 $extension = pathinfo($uri, PATHINFO_EXTENSION);
 if ($extension && in_array(strtolower($extension), ['css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'mp4', 'ico', 'woff', 'woff2', 'json', 'map'], true)) {
-    $fallback = __DIR__ . '/' . ltrim($uri, '/');
-    if (is_file($fallback)) {
-        return false;
-    }
-    $basename = basename($uri);
-    $rootFile = __DIR__ . '/' . $basename;
-    if (is_file($rootFile)) {
+    $found = whereLocate($uri);
+    if ($found) {
         $mimes = [
             'css' => 'text/css; charset=utf-8',
             'js' => 'application/javascript; charset=utf-8',
@@ -36,21 +54,7 @@ if ($extension && in_array(strtolower($extension), ['css', 'js', 'png', 'jpg', '
             'woff2' => 'font/woff2',
         ];
         header('Content-Type: ' . ($mimes[strtolower($extension)] ?? 'application/octet-stream'));
-        readfile($rootFile);
-        exit;
-    }
-    $assetsFile = __DIR__ . '/assets/' . $basename;
-    if (is_file($assetsFile)) {
-        $mimes = [
-            'png' => 'image/png',
-            'jpg' => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'svg' => 'image/svg+xml',
-            'gif' => 'image/gif',
-            'webp' => 'image/webp',
-        ];
-        header('Content-Type: ' . ($mimes[strtolower($extension)] ?? 'application/octet-stream'));
-        readfile($assetsFile);
+        readfile($found);
         exit;
     }
     http_response_code(404);
@@ -60,14 +64,20 @@ if ($extension && in_array(strtolower($extension), ['css', 'js', 'png', 'jpg', '
 
 // 3. Route: / or /home -> index.html
 if ($uri === '/' || $uri === '/index.html' || $uri === '/home') {
-    require __DIR__ . '/index.html';
-    exit;
+    $page = whereLocate('index.html');
+    if ($page) {
+        require $page;
+        exit;
+    }
 }
 
 // 4. Route: /admin -> admin.html
-if ($uri === '/admin' || $uri === '/admin/') {
-    require __DIR__ . '/admin.html';
-    exit;
+if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin.html') {
+    $page = whereLocate('admin.html');
+    if ($page) {
+        require $page;
+        exit;
+    }
 }
 
 // 5. Redirect legacy ugly cafe URLs (/cafe.html?id=cafe-005...) to clean /surat/{area}/{slug}
@@ -101,40 +111,60 @@ if ($uri === '/cafe.html' || $uri === '/cafe') {
             // Fallback to serving cafe.html
         }
     }
-    require __DIR__ . '/cafe.html';
-    exit;
+    $page = whereLocate('cafe.html');
+    if ($page) {
+        require $page;
+        exit;
+    }
 }
 
 // 6. Clean Discovery Routing:
-// 1. /surat or /surat/all-spots -> explore.html
-// 2. /surat/{area_slug} -> explore.html?area={area_slug}
-// 3. /surat/{area_slug}/{cafe_slug} -> cafe.html
+// /surat or /surat/all-spots -> explore.html
+// /surat/{area_slug} -> explore.html?area={area_slug}
+// /surat/{area_slug}/{cafe_slug} -> cafe.html
 $trimmed = trim($uri, '/');
 $parts = explode('/', $trimmed);
 
 if ($parts[0] === 'surat') {
+    $explorePage = whereLocate('explore.html');
+    $cafePage = whereLocate('cafe.html');
+
     if (count($parts) === 1 || $parts[1] === 'all' || $parts[1] === 'all-spots') {
-        require __DIR__ . '/explore.html';
-        exit;
+        if ($explorePage) {
+            require $explorePage;
+            exit;
+        }
     }
 
     if (count($parts) === 2) {
         $_GET['area'] = $parts[1];
-        require __DIR__ . '/explore.html';
-        exit;
+        if ($explorePage) {
+            require $explorePage;
+            exit;
+        }
     }
 
     if (count($parts) >= 3) {
         $_GET['area'] = $parts[1];
         $_GET['slug'] = $parts[2];
-        require __DIR__ . '/cafe.html';
-        exit;
+        if ($cafePage) {
+            require $cafePage;
+            exit;
+        }
     }
 }
 
-// Fallback to index.html
-if (is_file(__DIR__ . '/index.html')) {
-    require __DIR__ . '/index.html';
+// 7. General HTML page route (e.g. /about.html, /explore.html, /profile.html, /login.html, /signup.html)
+$htmlFile = whereLocate($trimmed);
+if ($htmlFile && str_ends_with(strtolower($htmlFile), '.html')) {
+    require $htmlFile;
+    exit;
+}
+
+// 8. Fallback to index.html
+$indexPage = whereLocate('index.html');
+if ($indexPage) {
+    require $indexPage;
     exit;
 }
 

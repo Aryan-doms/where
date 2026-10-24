@@ -1,7 +1,7 @@
 async function loadSharedLayout() {
   const [headerResponse, footerResponse] = await Promise.all([
-    fetch("header.html"),
-    fetch("footer.html")
+    fetch("/header.html"),
+    fetch("/footer.html")
   ]);
   if (!headerResponse.ok || !footerResponse.ok) {
     throw new Error("The shared WHERE? layout could not be loaded.");
